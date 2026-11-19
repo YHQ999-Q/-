@@ -1,0 +1,21 @@
+.context-pill{flex-shrink:0;border-bottom:1px solid #efedf2;background:#fbf9ff;padding:8px 30px 9px;display:flex;flex-direction:column;gap:6px}
+.context-pill-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#6b5a80}
+.context-pill-row b{color:#32105e;font-weight:600}
+.context-pill-label{color:#a08cb5;font-size:11px}
+.context-pill-sep{color:#d8cce8}
+.context-pill-node.conflict{color:#c04545}
+.context-pill-node.pending{color:#a06a1f}
+.context-pill-asks{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.context-pill-asks small{color:#a08cb5;font-size:11px}
+.context-pill-asks button{border:1px solid #e3d6f8;background:#fff;color:#6b4a93;border-radius:99px;padding:5px 10px;font-size:11px;cursor:pointer;font:inherit}
+.context-pill-asks button:hover{background:#f3edff}
+.context-pill-more{padding-top:2px;border-top:1px dashed #eee5f8}
+.context-pill-more a{font-size:11px;color:#7b4fd8;text-decoration:none;padding:4px 6px;border-radius:6px}
+.context-pill-more a:hover{background:#f3edff}
+.context-pill-asks button.context-pill-liquid{border-color:#cdb7f5;background:linear-gradient(135deg,#f3ebff,#fff8dc);color:#5b2f9c;font-weight:600}
+@media (max-width:760px){
+  .context-pill{padding:8px 15px}
+  .context-pill-row{gap:5px;font-size:11px}
+  .context-pill-asks{gap:5px}
+  .context-pill-asks button{font-size:10px;padding:4px 8px}
+}

@@ -1,0 +1,18 @@
+{
+  "sample_id": "classroom-02",
+  "category": "classroom",
+  "title": "课程与教学论：后现代课程理论与多尔四R",
+  "date": "2026-11-13",
+  "start": "2026-11-13 08:33:18",
+  "end": "2026-11-13 09:03:34",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "utterance_count": 60,
+  "related_sample": "classroom-03",
+  "notes": "与 classroom-03 为同一节课被静音规则切开的前半段（约 08:33–09:03）。Bee 摘要已采用用户课堂纪要规则（见 shared/用户规则-课堂或讲座.md）。摘要中「本校」标识原为具体校名，已替换。",
+  "scrubbed_fields": [
+    "本校校名",
+    "精确校园地址与经纬度",
+    "原始会话编号"
+  ]
+}

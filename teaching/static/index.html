@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Self-Evolving Agent · 看板</title>
+<style>
+  :root{
+    --bg:#0B0F19; --panel:#111827; --line:#1F2937;
+    --ink:#E5E7EB; --muted:#8B94A3;
+    --green:#10B981; --red:#EF4444; --amber:#F59E0B; --blue:#3B82F6; --violet:#6366F1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;
+    background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  header{
+    height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 18px;border-bottom:1px solid var(--line);background:rgba(17,24,39,.85);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;letter-spacing:.4px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.55)}70%{box-shadow:0 0 0 9px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  .hgroup{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .vbtn{
+    padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:#1B2432;
+    color:var(--muted);font-size:12.5px;font-family:inherit;cursor:pointer;transition:.15s;
+  }
+  .vbtn.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+  .conn b{color:var(--green)} .conn .bad{color:var(--red)}
+
+  .main{flex:1;display:flex;overflow:hidden}
+  aside.left{width:296px;flex:none;border-right:1px solid var(--line);background:rgba(17,24,39,.45);
+              padding:14px;display:flex;flex-direction:column;gap:11px;overflow-y:auto}
+  h2{font-size:11px;letter-spacing:1.1px;color:var(--muted);margin:0;font-weight:600;text-transform:uppercase}
+
+  .box{background:rgba(31,41,55,.45);border:1px solid var(--line);border-radius:10px;padding:11px}
+  .box .cap{font-size:11.5px;color:var(--muted);margin-bottom:8px}
+  #hwState{font-size:12px;color:#9CA3AF;text-align:center;padding:18px 0;
+           border:1px dashed #374151;border-radius:7px;line-height:1.8}
+
+  button{font-family:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);
+         background:var(--panel);color:var(--ink);font-size:13px;padding:9px 12px;transition:.15s}
+  button:hover{border-color:#374151;background:#161f2e}
+  button.primary{border:none;background:linear-gradient(135deg,#059669,#2563EB);color:#fff;
+                 font-weight:600;box-shadow:0 4px 16px rgba(37,99,235,.25)}
+  button.primary:hover{opacity:.92}
+  button:disabled{opacity:.45;cursor:not-allowed}
+
+  .fileRow{display:flex;gap:8px}
+  .fileRow label{flex:1;text-align:center;font-size:12px;padding:8px;border:1px dashed #374151;
+                 border-radius:8px;color:var(--muted);cursor:pointer}
+  .fileRow label:hover{border-color:var(--green);color:var(--green)}
+  .fileRow input{display:none}
+
+  .stream{flex:1;min-height:120px;overflow-y:auto;font-family:Consolas,monospace;font-size:11.5px;
+          line-height:1.85;background:#050810;border:1px solid var(--line);border-radius:8px;padding:9px}
+  .stream .t{color:#4B5563;margin-right:6px}
+
+  /* ---------- 视图区 ---------- */
+  section{flex:1;position:relative;overflow:hidden}
+  .view{position:absolute;inset:0;overflow-y:auto}
+  .view.hide{display:none}
+
+  /* 答案视图 */
+  #view-answer{padding:22px 26px}
+  .cards{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+  .card{background:rgba(17,24,39,.65);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card.live{border-color:rgba(16,185,129,.45);box-shadow:0 0 24px rgba(16,185,129,.08)}
+  .card .head{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);
+              margin-bottom:8px;font-family:Consolas,monospace}
+  .card .head .tag{color:var(--green)}
+  .card h3{margin:0 0 12px;font-size:15.5px;font-weight:600}
+  .kv{display:flex;gap:10px;font-size:12.5px;line-height:1.9;margin-bottom:3px}
+  .kv b{flex:none;width:74px;color:var(--muted);font-weight:500}
+  .kv span{flex:1;color:#D1D5DB}
+  .kv .wait{color:#4B5563}
+  .conclusion{margin:14px 0 10px;padding:12px 14px;border-radius:9px;background:rgba(59,130,246,.09);
+              border-left:3px solid var(--blue);font-size:13.5px;line-height:1.85}
+  .steps{margin:10px 0 0;padding-left:20px;font-size:13.5px;line-height:2;color:#C9D1DB}
+  .steps li::marker{color:var(--green)}
+  .foot{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);
+        font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .foot .strat{color:var(--amber)}
+  .pill{font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--green)}
+
+  /* 图谱视图 */
+  #view-graph{overflow:hidden}
+  #graphCanvas{width:100%;height:100%;display:block;cursor:pointer}
+  .chips{position:absolute;top:14px;left:18px;right:18px;display:flex;gap:6px;flex-wrap:wrap;z-index:5}
+  .chip{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);
+        color:#5C6675;background:rgba(11,15,25,.75);transition:.25s;white-space:nowrap}
+  .chip.done{border-color:#134E4A;color:var(--green)}
+  .chip.now{border-color:var(--green);background:rgba(16,185,129,.15);color:#34D399;box-shadow:0 0 12px rgba(16,185,129,.25)}
+  .chip.bad{border-color:#7F1D1D;color:var(--red)}
+  .evidence{position:absolute;left:18px;bottom:18px;max-width:430px;background:rgba(13,20,32,.96);
+            border:1px solid var(--line);border-radius:10px;padding:13px 16px;font-size:12.5px;
+            line-height:1.85;display:none;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .evidence.show{display:block}
+  .evidence .k{color:var(--muted)}
+  .evidence h4{margin:0 0 6px;font-size:13px}
+  .legend{position:absolute;right:18px;bottom:18px;font-size:11.5px;color:var(--muted);
+          background:rgba(11,15,25,.75);border:1px solid var(--line);border-radius:8px;padding:8px 12px;line-height:1.9}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+  .verchip{position:absolute;right:18px;top:14px;font-size:12px;color:var(--muted);z-index:5}
+  .verchip b{color:var(--green)}
+  .verchip button{margin-left:8px;font-size:11px;padding:3px 10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span>ESP32 · Self-Evolving Agent</div>
+  <div class="hgroup">
+    <span class="conn" id="connState">连接中…</span>
+    <button class="vbtn on" id="btnAnswer" onclick="switchView('answer')">📄 答案</button>
+    <button class="vbtn" id="btnGraph" onclick="switchView('graph')">🧬 自进化图谱</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- 左：硬件（两个视图共用，切换不丢） -->
+  <aside class="left">
+    <h2>硬件输入</h2>
+    <div class="box">
+      <div class="cap">ESP32-S3 · OV2640 · INMP441</div>
+      <div id="hwState">等待采集…<br><span style="font-size:11px;color:#4B5563">按硬件按钮 / 点下面的按钮</span></div>
+    </div>
+    <button class="primary" id="btnSim" disabled>⚡ 模拟拍黑板 + 录音</button>
+    <div class="fileRow">
+      <label>📷 图片<input type="file" id="fImg" accept="image/*"></label>
+      <label>🎙 音频<input type="file" id="fAud" accept="audio/*"></label>
+    </div>
+    <button id="btnUpload" disabled>上传并跑完整链路</button>
+
+    <h2 style="margin-top:4px">实时流</h2>
+    <div class="stream" id="stream">
+      <div><span class="t">--:--:--</span>等待设备唤醒…</div>
+    </div>
+  </aside>
+
+  <section>
+    <!-- ============ 视图 A：答案 ============ -->
+    <div class="view" id="view-answer">
+      <div class="cards" id="cards">
+        <div class="card">
+          <div class="head"><span class="tag"># 系统就绪</span><span>—</span></div>
+          <h3>按下硬件按钮，或点左边「模拟拍黑板 + 录音」</h3>
+          <div class="kv"><b>它会做什么</b><span>识别黑板上的公式 → 听懂你的问题 → 判断和你脑子里的理解有没有冲突 → 冲突就让图谱自己改，然后给你一张能看懂的解答卡</span></div>
+          <div class="foot"><span>切到右上角「自进化图谱」能看到整个过程</span><span class="pill">同一份数据，两个视角</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 视图 B：图谱 ============ -->
+    <div class="view hide" id="view-graph">
+      <div class="chips" id="chips"></div>
+      <div class="verchip">图谱版本 <b id="kgVer">v3</b><button id="btnRollback" disabled>↩ 回滚</button></div>
+      <canvas id="graphCanvas"></canvas>
+      <div class="evidence" id="ev">
+        <h4 id="evTitle">节点</h4>
+        <div id="evBody"></div>
+      </div>
+      <div class="legend">
+        <div><i style="background:#10B981"></i>稳定节点</div>
+        <div><i style="background:#EF4444"></i>冲突 / 重构中</div>
+        <div><i style="background:#F59E0B"></i>待裁决</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ================= 通用 ================= */
+const $ = id => document.getElementById(id);
+const now = () => new Date().toLocaleTimeString('zh-CN',{hour12:false});
+
+const STAGES = ['rx','asr','ocr','align','retrieve','judge','patch','guard','commit','evolve'];
+const LABEL = {rx:'接收',asr:'转写',ocr:'识别',align:'对齐',retrieve:'检索',
+               judge:'裁决',patch:'候选',guard:'校验',commit:'提交',evolve:'策略'};
+
+let G = {version:0, nodes:[], edges:[]};
+let pos = {}, anim = {};
+let lastEventId = 0, connected = false, polling = false, busy = false;
+let liveCard = null, lastCommitVersion = null;
+
+function switchView(v){
+  $('view-answer').classList.toggle('hide', v!=='answer');
+  $('view-graph').classList.toggle('hide', v!=='graph');
+  $('btnAnswer').classList.toggle('on', v==='answer');
+  $('btnGraph').classList.toggle('on', v==='graph');
+  if(v==='graph'){ resizeCanvas(); layout(true); }
+}
+
+/* ================= 画布 ================= */
+const cv = $('graphCanvas'), ctx = cv.getContext('2d');
+function resizeCanvas(){
+  const r = cv.parentElement.getBoundingClientRect();
+  if(r.width>10 && r.height>10){ cv.width = r.width; cv.height = r.height; }
+}
+window.addEventListener('resize', ()=>{ resizeCanvas(); layout(true); });
+
+function layout(force){
+  const cx = cv.width/2, cy = cv.height/2 + 16;
+  const list = G.nodes.filter(n=>n.id!=='root');
+  G.nodes.forEach(n=>{
+    if(pos[n.id] && !force) return;
+    if(n.id==='root'){ pos[n.id] = {x:cx, y:cy}; return; }
+    const i = list.indexOf(n), k = Math.max(1, list.length);
+    const ang = i / k * Math.PI*2 - Math.PI/2;
+    const rad = Math.min(cv.width, cv.height) * 0.30;
+    pos[n.id] = {x: cx + Math.cos(ang)*rad*1.5, y: cy + Math.sin(ang)*rad};
+  });
+  G.nodes.forEach(n=>{
+    if(!anim[n.id]) anim[n.id] = {x:pos[n.id].x, y:pos[n.id].y, r:0, a:0};
+  });
+}
+
+const colorOf = st => st==='conflict' ? '#EF4444' : st==='pending' ? '#F59E0B' : '#10B981';
+
+function draw(t){
+  requestAnimationFrame(draw);
+  if(cv.width < 10) return;              // 视图隐藏时不画，避免 0 宽报错
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  ctx.strokeStyle='rgba(31,41,55,.35)'; ctx.lineWidth=1;
+  for(let x=0;x<cv.width;x+=44){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+  for(let y=0;y<cv.height;y+=44){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+
+  G.edges.forEach(e=>{
+    const a = anim[e.from], b = anim[e.to];
+    if(!a||!b) return;
+    const mx=(a.x+b.x)/2+Math.sin(t/900+a.x)*9, my=(a.y+b.y)/2+Math.cos(t/1100+a.y)*9;
+    const g = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+    g.addColorStop(0,'rgba(59,130,246,.55)'); g.addColorStop(1,'rgba(16,185,129,.55)');
+    ctx.strokeStyle=g; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(mx,my,b.x,b.y); ctx.stroke();
+  });
+
+  G.nodes.forEach(nd=>{
+    const p = pos[nd.id] || {x:cv.width/2,y:cv.height/2};
+    const a = anim[nd.id] || (anim[nd.id]={x:p.x,y:p.y,r:0,a:0});
+    a.x += (p.x-a.x)*0.08; a.y += (p.y-a.y)*0.08; a.a += (1-a.a)*0.06 || 0.01;
+    const target = nd.id==='root' ? 34 : 23;
+    a.r += (target-a.r)*0.08;
+
+    const conflict = nd.status==='conflict';
+    const pulse = conflict ? 0.55+0.45*Math.sin(t/220) : 1;
+    const c = colorOf(nd.status);
+
+    const halo = ctx.createRadialGradient(a.x,a.y,0,a.x,a.y,a.r*2.2);
+    halo.addColorStop(0,c+'55'); halo.addColorStop(1,c+'00');
+    ctx.fillStyle=halo; ctx.globalAlpha=a.a*(conflict?pulse:0.8);
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*2.2,0,Math.PI*2); ctx.fill();
+
+    ctx.globalAlpha=a.a;
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r,0,Math.PI*2); ctx.fillStyle=c; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.globalAlpha=1;
+
+    ctx.fillStyle = conflict ? '#FCA5A5' : '#D1D5DB';
+    ctx.font='12px -apple-system,"PingFang SC",sans-serif'; ctx.textAlign='center';
+    ctx.fillText(nd.label, a.x, a.y+a.r+18);
+    if(nd.conf!==undefined){
+      ctx.fillStyle='#6B7280'; ctx.font='10px Consolas';
+      ctx.fillText(nd.conf.toFixed(2), a.x, a.y+a.r+32);
+    }
+  });
+}
+requestAnimationFrame(draw);
+
+/* ================= 答案卡片 ================= */
+function newLiveCard(device){
+  const el = document.createElement('div');
+  el.className = 'card live';
+  el.innerHTML = `
+    <div class="head"><span class="tag">ESP32 · ${device}</span><span>${now()}</span></div>
+    <h3 class="t">正在解析…</h3>
+    <div class="kv"><b>语音转写</b><span class="asr wait">等待中…</span></div>
+    <div class="kv"><b>图像识别</b><span class="ocr wait">等待中…</span></div>
+    <div class="conclusion" style="display:none"></div>
+    <ol class="steps" style="display:none"></ol>
+    <div class="foot"><span class="ver"></span><span class="strat"></span></div>`;
+  $('cards').prepend(el);
+  return el;
+}
+
+function fillLiveCard(stage, p){
+  if(!liveCard) return;
+  const q = s => liveCard.querySelector(s);
+  if(stage==='asr'){ q('.asr').textContent = p.text; q('.asr').classList.remove('wait'); }
+  if(stage==='ocr'){ q('.ocr').textContent = p.text; q('.ocr').classList.remove('wait'); }
+  if(stage==='judge'){
+    q('.t').textContent = p.conflict ? '发现一处冲突，正在修正知识库' : '和知识库一致，继续往下';
+  }
+  if(stage==='commit'){
+    q('.ver').innerHTML = `<span class="pill">图谱升级到 v${p.version}</span>`;
+  }
+  if(stage==='answer'){
+    q('.t').textContent = '解析完成';
+    const c = q('.conclusion');
+    c.style.display='block'; c.textContent = p.conclusion || '';
+    const ol = q('.steps');
+    ol.style.display='block'; ol.innerHTML='';
+    (p.steps||[]).forEach(s=>{
+      const li = document.createElement('li'); li.textContent = s; ol.appendChild(li);
+    });
+    q('.strat').textContent = '本次策略：' + (p.strategy||'—');
+  }
+}
+
+/* ================= 图谱 ================= */
+function applyGraph(snap){
+  if(!snap) return;
+  G = snap;
+  $('kgVer').textContent = 'v' + snap.version;
+  layout(false);
+}
+
+/* ================= 事件 ================= */
+function handleEvent(ev){
+  if(ev.id <= lastEventId) return;
+  lastEventId = ev.id;
+  const p = ev.payload || {};
+
+  if(ev.stage==='rx'){
+    liveCard = newLiveCard(p.device||'device');
+    $('hwState').innerHTML = `<span style="color:#34D399">已采集</span><br>
+      <span style="font-size:11px;color:#6B7280">图 ${p.image_kb||0} KB · 音频 ${p.audio_kb||0} KB</span>`;
+    pushStream(`收到 ${p.device} 数据包`);
+  }
+
+  if(ev.stage==='asr'){ setChip('asr'); pushStream('语音转写完成'); }
+  if(ev.stage==='ocr'){ setChip('ocr'); pushStream('图像结构化完成'); }
+  if(ev.stage==='align') setChip('align');
+  if(ev.stage==='retrieve') setChip('retrieve');
+  if(ev.stage==='judge'){
+    setChip('judge');
+    G.nodes.forEach(n=>{ if(n.id===p.node_id) n.status = p.conflict?'conflict':'stable'; });
+    pushStream(p.conflict ? '⚠ 检测到冲突' : '无冲突，仅提升置信度');
+  }
+  if(ev.stage==='patch') setChip('patch');
+  if(ev.stage==='guard') setChip('guard', p.pass);
+  if(ev.stage==='commit'){ setChip('commit'); applyGraph(p.graph); lastCommitVersion=p.version;
+                           $('btnRollback').disabled=false; pushStream(`图谱 → v${p.version}`); }
+  if(ev.stage==='noop') setChip('commit');
+  if(ev.stage==='evolve'){ setChip('evolve'); setBusy(false); }
+  if(ev.stage==='answer'){ setBusy(false); }
+
+  fillLiveCard(ev.stage, p);
+}
+
+function pushStream(txt){
+  const el=document.createElement('div');
+  el.innerHTML=`<span class="t">${now()}</span>${txt}`;
+  const s=$('stream'); s.appendChild(el); s.scrollTop=s.scrollHeight;
+  while(s.children.length>120) s.removeChild(s.firstChild);
+}
+
+function setChip(stage, ok){
+  const box=$('chips');
+  if(!box.children.length){
+    box.innerHTML = STAGES.map(s=>`<span class="chip" data-s="${s}">${LABEL[s]}</span>`).join('');
+  }
+  [...box.children].forEach(c=>{ if(c.classList.contains('now')) c.className='chip done'; });
+  const el=box.querySelector(`[data-s="${stage}"]`);
+  if(el) el.className = 'chip ' + (ok===false ? 'bad':'now');
+}
+
+function resetChips(){
+  $('chips').innerHTML = STAGES.map(s=>`<span class="chip" data-s="${s}">${LABEL[s]}</span>`).join('');
+}
+
+/* ================= 连接 ================= */
+function connectWS(){
+  let ws;
+  try{ ws = new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws'); }
+  catch(e){ return pollStart(); }
+
+  ws.onopen = ()=>{
+    connected=true;
+    $('connState').innerHTML='<b>在线</b> · WebSocket';
+    enableUi();
+  };
+  ws.onmessage = e=>{
+    const d = JSON.parse(e.data);
+    if(d.type==='hello'){ applyGraph(d.graph); (d.events||[]).forEach(handleEvent); }
+    else if(d.type!=='ping') handleEvent(d);
+  };
+  ws.onerror = ()=>{ if(!connected) pollStart(); };
+  ws.onclose = ()=>{
+    connected=false;
+    $('connState').innerHTML='<span class="bad">轮询</span>';
+    pollStart();
+  };
+}
+
+function pollStart(){
+  if(polling) return; polling=true;
+  enableUi();
+  setInterval(async ()=>{
+    if(connected) return;
+    try{
+      const r = await fetch('/api/events?since='+lastEventId);
+      const d = await r.json();
+      if(d.graph) applyGraph(d.graph);
+      (d.events||[]).forEach(handleEvent);
+    }catch(e){}
+  }, 1200);
+}
+
+function enableUi(){
+  $('btnSim').disabled=false; $('btnUpload').disabled=false;
+}
+
+/* ================= 交互 ================= */
+async function ingest(files){
+  if(busy) return;
+  setBusy(true);
+  resetChips();
+  const fd = new FormData();
+  fd.append('device_id','esp32-s3-A1B2');
+  if(files?.img) fd.append('image', files.img);
+  if(files?.aud) fd.append('audio', files.aud);
+  try{ await fetch('/api/ingest',{method:'POST',body:fd}); }
+  catch(e){ setBusy(false); alert('后端没启动：先运行 python server.py'); }
+}
+
+function setBusy(b){
+  busy=b;
+  $('btnSim').disabled=b; $('btnUpload').disabled=b;
+}
+
+$('btnSim').onclick = ()=> ingest(null);
+$('btnUpload').onclick = ()=> ingest({img:$('fImg').files[0], aud:$('fAud').files[0]});
+$('btnRollback').onclick = async ()=>{
+  if(!lastCommitVersion) return;
+  const r = await fetch('/api/rollback',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({version:lastCommitVersion})});
+  const d = await r.json();
+  if(d.ok){ applyGraph(d.graph); pushStream(`已回滚到 v${lastCommitVersion}`); }
+};
+
+cv.addEventListener('click', e=>{
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit = G.nodes.find(n=>{ const a=anim[n.id]; return a && Math.hypot(a.x-mx,a.y-my)<(a.r||24)+6; });
+  const box=$('ev');
+  if(hit){
+    const ev = (hit.evidence && hit.evidence.length) ? hit.evidence[hit.evidence.length-1] : null;
+    $('evTitle').textContent = hit.label;
+    $('evBody').innerHTML = `
+      <div><span class="k">节点 id：</span>${hit.id}</div>
+      <div><span class="k">状态：</span>${hit.status}　<span class="k">置信度：</span>${(hit.conf??0).toFixed(2)}</div>
+      <div style="margin-top:8px"><span class="k">证据 · 语音：</span>${ev?ev.asr:'—'}</div>
+      <div><span class="k">证据 · 图像：</span>${ev?ev.ocr:'—'}</div>`;
+    box.classList.add('show');
+  } else box.classList.remove('show');
+});
+
+/* ================= 启动 ================= */
+resetChips();
+resizeCanvas();
+connectWS();
+fetch('/api/health').then(r=>r.json()).then(d=>{
+  pushStream(`后端在线 · ASR ${d.models.asr} · VL ${d.models.vl} · 裁决 ${d.models.judge}`);
+}).catch(()=>{});
+</script>
+</body>
+</html>

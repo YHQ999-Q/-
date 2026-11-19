@@ -1,0 +1,31 @@
+.agent-loop{background:#fff;border:1px solid #e6dcf7;border-radius:16px;padding:12px 14px;box-shadow:0 2px 10px rgba(90,0,255,.04)}
+.agent-loop.capture{border-color:#f0dfb2;background:#fffdf7}
+.agent-loop.capture .agent-loop-index{background:#d4a017}
+.agent-loop-note{margin:8px 0 0;font-size:11px;line-height:1.5;color:#8d7ba8}
+.agent-loop-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.agent-loop-head b{font-size:14px;color:#32105e}
+.agent-loop-badge{font-style:normal;font-size:11px;font-weight:700;color:#6d3bae;background:#f1e8ff;border:1px solid #e0cff7;border-radius:99px;padding:2px 8px;letter-spacing:.5px}
+.agent-loop-head span{font-size:12px;color:#766a91}
+.agent-loop-head a{margin-left:auto;font-size:12px;color:#7b4fd8;text-decoration:none;display:inline-flex;gap:4px;align-items:center}
+.agent-loop-toggle{border:1px solid #e3d6f8;background:#fff;color:#6b4a93;border-radius:99px;padding:3px 9px;font-size:11px;cursor:pointer}
+.agent-loop-toggle:hover{background:#f3edff}
+.agent-loop-steps{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.agent-loop-step{flex:0 0 auto;display:flex;gap:8px;align-items:flex-start;min-width:150px;max-width:210px;padding:8px 10px;border-radius:12px;background:#faf8ff;border:1px solid #eee6fb}
+.agent-loop-step.ok{background:#fbf9ff;border-color:#e3d6f8}
+.agent-loop-step.warn{background:#fffaf2;border-color:#f0dfb2}
+.agent-loop-step.muted{opacity:.62}
+.agent-loop-index{flex:0 0 20px;height:20px;border-radius:50%;background:#7b4fd8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.agent-loop-step small{display:block;font-size:11px;color:#766a91}
+.agent-loop-step b{display:block;font-size:13px;color:#32105e;margin:1px 0}
+.agent-loop-step p{margin:0;font-size:11px;line-height:1.4;color:#6b617f;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:760px){
+  .agent-loop{padding:10px 12px;border-radius:14px}
+  .agent-loop-head{gap:7px;margin-bottom:7px}
+  .agent-loop-head>b{font-size:13px}
+  .agent-loop-head>span{display:none}
+  .agent-loop-toggle{font-size:10px;padding:3px 8px}
+  .agent-loop-steps{gap:6px}
+  .agent-loop-step{min-width:128px;max-width:170px;padding:7px 8px}
+  .agent-loop-step b{font-size:12px}
+  .agent-loop-note{font-size:10px;line-height:1.5}
+}

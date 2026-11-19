@@ -1,0 +1,23 @@
+{
+  "sample_id": "project-02",
+  "category": "project",
+  "title": "项目讨论：自进化 AI 教学产品的机制与分工",
+  "date": "2026-11-11",
+  "start": "2026-11-11 19:20:57",
+  "end": "2026-11-11 19:48:59",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "utterance_count": 110,
+  "notes": "团队会议。转写中的英文称呼已替换。facts.json 中有 1 条相关已有事实（非本段自动抽取）。当前待办库无对应正式 todo，行动项见摘要。",
+  "scrubbed_fields": [
+    "用户真名",
+    "队友称呼",
+    "精确位置",
+    "原始会话编号"
+  ],
+  "related_grow_samples": [
+    "insight-03",
+    "insight-07",
+    "daily-02"
+  ]
+}

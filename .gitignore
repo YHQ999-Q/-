@@ -1,0 +1,91 @@
+# ============================================================
+# METAMIND · 根级 .gitignore
+# 安全红线：本仓库是公开的，任何真实密钥 / 个人数据 / 数据库
+# 一旦提交都会被全网看到。以下规则兜底屏蔽所有敏感路径。
+# 请永远不要把真实密钥文件、真实 .db、uploads、native-data
+# 提交进这个仓库。
+# ============================================================
+
+# ---- 真实密钥与环境变量（只留 .env.example 模板）----
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.env
+!*.env.example
+native-data/
+**/native-data/
+*.env.local
+*.env.production
+
+# ---- API key 文件 ----
+api_key.txt
+**/api_key.txt
+*key*.txt
+
+# ---- 真实数据库（含个人学习/教学数据）----
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db-journal
+
+# ---- 个人数据与上传 ----
+uploads/
+**/uploads/
+private-data/
+**/private-data/
+evidence/
+**/evidence/
+incoming/
+**/incoming/
+
+# ---- 运行期日志 ----
+*.log
+**/*.log
+
+# ---- 依赖与构建 ----
+node_modules/
+**/node_modules/
+.venv/
+**/.venv/
+venv/
+.venv-*/
+.runtime/
+__pycache__/
+**/__pycache__/
+*.pyc
+dist/
+build/
+*.tsbuildinfo
+.vite/
+
+# ---- 本地/临时/IDE ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+tmp/
+temp/
+.sessions/
+sessions/
+
+# ---- Windows 本地运行产物 ----
+OpenTutor.exe
+*.ico
+
+# ---- 旧版记忆站构建 / 隔离工具 ----
+.venv-build/
+source-release/
+local-backups/
+
+# ---- 说明：若你确实需要一个示例数据库用于开发，请放
+# ---- evidence/ 下并命名为 *-sanitized.db 且内容为合成演示数据，
+# ---- 同时在此白名单。默认一律屏蔽。

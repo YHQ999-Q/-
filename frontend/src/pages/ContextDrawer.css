@@ -1,0 +1,47 @@
+.context-drawer-backdrop{position:fixed;inset:0;z-index:120;background:#1d0b2e66;display:flex;justify-content:flex-end}
+.context-drawer{width:min(620px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 40px #1d0b2e2e;padding:22px 24px 40px;animation:drawer-in .18s ease}
+@keyframes drawer-in{from{transform:translateX(30px);opacity:.4}to{transform:none;opacity:1}}
+.context-drawer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:sticky;top:-22px;background:#fff;padding:4px 0 10px;z-index:2}
+.context-drawer-head h2{margin:2px 0 4px;font-size:22px}
+.context-drawer-head p{margin:0;font-size:13px}
+.drawer-meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.drawer-meta b{font-size:14px}
+.drawer-meta span{font-size:12px;color:#5b4a86;background:#f6f2ff;border-radius:99px;padding:4px 10px}
+.compare-steps{display:grid;gap:10px}
+.compare-step{border:1px solid #eee6fb;border-radius:12px;padding:10px 12px;background:#fcfbff}
+.compare-step header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.compare-step header b{font-size:14px}
+.compare-changed{font-size:11px;color:#a06a1f;background:#fff7e8;border:1px solid #f0dfb2;border-radius:99px;padding:2px 8px}
+.compare-same{font-size:11px;color:#766a91;background:#f3eff8;border-radius:99px;padding:2px 8px}
+.compare-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.compare-cols div{padding:8px 10px;border-radius:10px;background:#fff;border:1px solid #f0eaf9}
+.compare-cols small{display:block;font-size:11px;color:#8d7ba8;margin-bottom:4px}
+.compare-cols p{margin:0;font-size:12px;line-height:1.55;color:#4e4268;white-space:pre-wrap}
+.drawer-current{border:1px solid #e6dcf7;border-radius:14px;padding:12px 14px;background:#fbf9ff;margin:10px 0 16px}
+.drawer-current h3{margin:0 0 10px;font-size:15px;color:#32105e}
+.drawer-current-row{margin:0 0 10px}
+.drawer-current-row:last-child{margin-bottom:0}
+.drawer-current-row small{display:block;font-size:11px;color:#8d7ba8;margin-bottom:3px}
+.drawer-current-row p{margin:0;font-size:13px;line-height:1.6;color:#4e4268;white-space:pre-wrap;overflow-wrap:anywhere}
+.drawer-current-tags{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.drawer-current-tags span{font-size:11px;color:#5b4a86;background:#f3edff;border:1px solid #e6dcf7;border-radius:99px;padding:3px 9px}
+.drawer-current-refs{margin:0;padding-left:18px}
+.drawer-current-refs li{font-size:12px;line-height:1.6;color:#4e4268;margin:2px 0}
+.drawer-current-refs a{color:#7b4fd8}
+.drawer-current-refs em{display:block;font-style:normal;color:#8d7ba8;font-size:11px}
+.drawer-subhead{margin:16px 0 4px;font-size:15px;color:#32105e}
+.drawer-evo{margin:18px 0 8px;border-top:1px solid #eee6fb;padding-top:14px}
+.drawer-evo h3{margin:0 0 8px;font-size:15px;color:#32105e}
+.drawer-evo article{padding:9px 11px;border-radius:11px;background:#fbf9ff;border:1px solid #eee6fb;margin-bottom:8px}
+.drawer-evo b{display:block;font-size:13px;color:#4b2a7b;margin-bottom:3px}
+.drawer-evo p{margin:0;font-size:12px;line-height:1.65;color:#5b4a6e}
+.drawer-chain{display:grid;gap:10px;margin:12px 0}
+.drawer-chain-step{display:flex;gap:10px;padding:10px 12px;border-radius:12px;background:#faf8ff;border:1px solid #eee6fb}
+.drawer-chain-step>span{flex:0 0 24px;height:24px;border-radius:50%;background:#7b4fd8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.drawer-chain-step b{display:block;font-size:14px}
+.drawer-chain-step small{display:block;color:#766a91;font-size:11px;margin:2px 0}
+.drawer-chain-step p{margin:4px 0;font-size:13px;line-height:1.55;color:#4e4268}
+.drawer-chain-step code{font-size:11px;color:#7b4fd8;background:#f1eafd;padding:2px 6px;border-radius:6px}
+.drawer-honesty{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.drawer-honesty span{font-size:12px;padding:5px 9px;border-radius:99px;background:#fbf9f3;border:1px solid #efe4cc;color:#5c5342}
+@media (max-width:760px){.context-drawer{width:100vw;padding:16px 16px 32px}.compare-cols{grid-template-columns:1fr}}

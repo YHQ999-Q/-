@@ -1,0 +1,4 @@
+.workspace:has(.capture-standalone) .workspace-bar{display:none}
+.workspace:has(.capture-standalone) .workspace-content{padding:0;max-width:none}
+.capture-standalone{display:block;width:100%;height:100dvh;border:0;background:#fff}
+@media (max-width:760px){.capture-standalone{height:calc(100dvh - 70px - env(safe-area-inset-bottom))}}

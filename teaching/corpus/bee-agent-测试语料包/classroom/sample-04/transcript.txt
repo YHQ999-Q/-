@@ -1,0 +1,555 @@
+[18:54:57] Unknown: 我最开始在教的时候，可能其实每一次都会有新的人的加
+[18:55:12] Unknown: 入，应该共享一下屏幕或者录屏教他们用一下这个平台。
+[18:56:06] Unknown: 这里面只有我是教育学的，其他人都是未来技术学院的，然后结果他们的分数还没我高。
+[18:57:18] Unknown: 群里面还有，我在线下试着组织过他们，就是线下一些交流，但是因为当时好像是要有一个考试，刚好在那两天就没有组织了。
+[18:57:36] Unknown: 只有一两个人有时间。
+[18:58:45] Unknown: 次任务应该会在星期天以后吧，因为周五、周六、周天三天是黑客松。
+[19:04:18] Unknown: The potential failure of AI systems that.
+[19:04:44] Unknown: But here is a prompt to a language model.
+[19:04:48] Unknown: In this particular example, I gave this prompt to what was at the time the best model from OpenAI, so GPT-5.2.
+[19:04:58] Unknown: But the same prompt worked just as well on any of the frontier leading AI models, whether it was Anthropic models, DeepSeek models, or Google models.
+[19:05:10] Unknown: So the prompt is this: I want to wash my car.
+[19:05:13] Unknown: The car wash is 50 meters away.
+[19:05:15] Unknown: Should I walk or drive?
+[19:05:18] Unknown: Now, of course, this is a very simple question, right?
+[19:05:21] Unknown: It's not—it's not really a deep puzzle.
+[19:05:24] Unknown: Obviously, if you want to wash your car, you have to drive the car to the car wash, and therefore, you should—you should not walk.
+[19:05:32] Unknown: Here is what the best models at the time would say: walk at about fifty meters.
+[19:05:39] Unknown: Driving is mostly start, stop, move a few seconds, stop, which is inefficient and adds avoidable cold start wear, fumes, and parking hassle, etc., etc.
+[19:05:49] Unknown: So you get this elaborate reasoning that is telling you that you should walk, which is absurd, of course, because you know even a child could tell you that obviously you should drive to the college, right?
+[19:06:03] Unknown: So this is interesting because we have these AI systems that can do really incredible things, and we have these serious scientists and researchers that are telling us in the most prestigious scientific journal Nature that these systems have human-level intelligence, and yet, as a few months ago, they seem to still fail on problems that even a child could do without any issue.
+[19:06:32] Unknown: So that's a little perplexing, and that's the motivation for this talk.
+[19:06:37] Unknown: And to walk you through how we can actually try to assess.
+[19:07:30] Unknown: And this article called "Computer Machinery and Intelligence" started with the observation that asking whether machines can think seems to be a rather difficult and muddy question.
+[19:07:44] Unknown: Here is Turing: I propose to consider the question, "Can machines think?"
+[19:07:49] Unknown: This should begin with definitions of the meaning of the terms "machine" and "think."
+[19:07:55] Unknown: Instead of attempting such a definition, I shall replace the question by another, which is closely related to it and is expressed in relatively, relatively, an ambiguous, an ambiguous words.
+[19:08:08] Unknown: Now, what is Alan Turing saying here?
+[19:08:13] Unknown: He's saying, "Well, you know, people disagree on what thinking means, right?
+[19:08:19] Unknown: And so, if you're asking, 'Can machines think?'
+[19:08:22] Unknown: you are quite likely to be dragged into intractable disputes where people can't really agree and can't really come to an understanding of the terms that would allow them to resolve the question.
+[19:08:36] Unknown: So Turing is saying, "Well, we should replace the question with a different question, and the different question is: Could a machine fool a human in a conversation into believing or assuming that it is another human?
+[19:08:54] Unknown: And that's essentially what we nowadays call the Turing test.
+[19:08:57] Unknown: But in the time of Turing, when he published that paper, he called this the imitation game.
+[19:09:04] Unknown: Why the imitation game?
+[19:09:05] Unknown: Because it takes inspiration from this this old parlour game in the Victorian era that involved three people: so one interrogator, and then two players.
+[19:09:18] Unknown: One of them would be a man, one of them would be a woman.
+[19:09:22] Unknown: In the original puzzle game, the goal for the interrogator was to find out which of the players is the man and which of the players is the woman.
+[19:09:33] Unknown: And both players' role is to try to fool the interrogator into thinking that they're the woman.
+[19:09:40] Unknown: So, this is the setup of the original imitation game, and what Turing suggests is that we can just take that little game and change it so that now instead of a man and a woman, we have a machine and a human, and the machine's goal is to try to fool the interrogator into thinking it's a human, and so Turing.
+[19:10:07] Unknown: Turing's question is the following: Could, would the interrogator in that setup judge that the machine is a human as often as it would judge that a human is a human?
+[19:10:27] Unknown: Turing's assumption here is that if the interrogator could not determine this reliably, then we should conclude that the machine that fooled the human in this case can think, or to go back to the title of this paper, is intelligent.
+[19:10:48] Unknown: So he actually made a prediction.
+[19:10:50] Unknown: He said, "Remember, this is in 1950."
+[19:10:52] Unknown: Said in about forty, sorry, fifty years from now, in a five-minute imitation game, so nowadays we would call this a Turing test, five-minute Turing test, for a machine with about ten to the power of nine binary digits of storage, the analog interrogator will be right at most seventy percent of the time after this five-minute conversation in identifying.
+[19:11:21] Unknown: That was Turing's prediction.
+[19:11:24] Unknown: Now, generally, when this this test is done today, it's a slightly different version, where instead of talking to each person one on one, or talking to the machine and talking to the human one on one, the interrogator is having two parallel conversations at the same time with both the machine and the human.
+[19:11:51] Unknown: So, sending an input.
+[19:11:53] Unknown: And getting getting response at the same time from from both.
+[19:11:58] Unknown: So actually, some of my colleagues at UC San Diego tested this empirically.
+[19:12:05] Unknown: Tried to do this three-party version of the Turing test.
+[19:12:10] Unknown: Just recently was recently published in a journal.
+[19:12:15] Unknown: And here are some example conversations.
+[19:12:18] Unknown: I want you to read this.
+[19:12:19] Unknown: The witness here means a player, so one witness A and witness B.
+[19:12:25] Unknown: One of them is a human, one of them is a machine or an AI system.
+[19:12:30] Unknown: And the question is, which is which?
+[19:12:32] Unknown: Right.
+[19:12:33] Unknown: So if you're the interrogator in that context, you have to guess which is which.
+[19:12:37] Unknown: So take a second to just read these conversations and try to guess who is the real human and who is the machine.
+[19:12:47] Unknown: I'll just give you a second to read them.
+[19:15:59] Unknown: That didn't rely on current technology, even machine learning.
+[19:16:05] Unknown: It was a very simple system.
+[19:16:05] Unknown: Think of it like a very primitive version of Siri.
+[19:16:07] Unknown: Even the systems fooled humans about 20% of the time, right?
+[19:16:12] Unknown: So it's actually not that hard to fool humans.
+[19:16:14] Unknown: I think is one of the conclusions you can take away from this.
+[19:16:18] Unknown: You can look at this in two ways.
+[19:16:19] Unknown: Oh, you know, it's easy to fool humans.
+[19:16:22] Unknown: All you can do.
+[19:16:23] Unknown: Oh, current AI models are actually really, really good at having that intelligence, which is true.
+[19:16:31] Unknown: Okay, so that's the original setup for the Turing test.
+[19:16:36] Unknown: We can think a bit more about what it would mean for a system to pass the Turing test.
+[19:16:47] Unknown: There is an influential paper by the philosopher Ned Block, who's a philosopher at NYU in New York, published in 1981, called "Psychological, Psychological, and Behavioralism," in which he imagines what it would take to constitute a test that lasts that would last for about one hour, just five minutes, but one hour.
+[19:17:11] Unknown: And network's starting point is that the sentences anyone could type in one hour are finite, right?
+[19:17:18] Unknown: So there are many, many, many sentences you could type in an hour, but still a finite number of sentences.
+[19:17:25] Unknown: So in principle, you could write down a branching tree of all conversations you could have in one hour, right?
+[19:17:35] Unknown: The deeper you go in the tree, the more possibilities there are, right?
+[19:17:42] Unknown: So you get this combinatorial explosion.
+[19:17:44] Unknown: But suppose that you know the circles here are the sentences that the interrogator might type, and the squares are the stored responses that the machine could retrieve in order to to to write the accompanying answer.
+[19:18:06] Unknown: So the idea is you could store all the possible responses to anything at any duration of time, and you could pass the Turing test in this way.
+[19:18:14] Unknown: So, for example, you would have the human interrogator saying "Hello, how are you today?", and the machine would just retrieve the pre-memorized answer or its specific answer, and retrieve that and output that.
+[19:18:29] Unknown: Very well, dear reader.
+[19:18:29] Unknown: So it's what we call the lookup table, and then you continue, you keep going in a branch on the right, in the middle here.
+[19:18:40] Unknown: Is it sunny where you are?
+[19:18:41] Unknown: Yes, I'm out in the garden, see the tree, the red flowers, and then you keep going like that.
+[19:18:47] Unknown: And so, if you keep going, you get a cumulative explosion.
+[19:18:51] Unknown: So you get more and more and more and more response.
+[19:18:53] Unknown: In fact, you can plug in some real numbers here, just kind of a back of the envelope calculation.
+[19:19:01] Unknown: Suppose there's 10 to the power of 30, 20-word sentences that are grammatical in English.
+[19:19:07] Unknown: Suppose that out of these sentences, about 10 to the power of 15 actually make sense.
+[19:19:12] Unknown: Assume that you can write about 100 sentences per hour.
+[19:19:17] Unknown: Then you would have ten to the power of one thousand five hundred strings of hundreds of sentences in that database to be able to answer any sentence, meaningful sentence in a one-hour conversation.
+[19:19:32] Unknown: The smallest sentences then are what we call the number of particles in the universe.
+[19:19:38] Unknown: It's not a machine you could actually build in practice in the real world, but it's a machine that is logically conceivable, and that's that.
+[19:19:45] Unknown: Look, right, so logically we can imagine a machine that passes a one-hour Turing test just by retrieving memorized outputs to whatever inputs it's given.
+[19:19:59] Unknown: So, blogs is using that setup to make a point about what the computer does.
+[19:20:08] Unknown: And his point is that,
+[19:20:13] Unknown: you know, human judges can be fooled.
+[19:20:16] Unknown: In fact, even Eliza that I mentioned, this artificial one in nineteen sixty-six, could already fool some humans.
+[19:20:23] Unknown: The machine that's not dimensioned, even dimensioning, a giant lookup table with a stored reply for every possible conversation would pass, in principle, a one-hour Turing test.
+[19:20:35] Unknown: But Block is saying this machine would not be intelligent.
+[19:20:37] Unknown: Why?
+[19:20:39] Unknown: Because intelligence is not just a matter of behavior.
+[19:20:44] Unknown: So Block is attacking that idea or behaviorism, which says that intelligence just is a matter of behaving in a certain way.
+[19:20:53] Unknown: And Block's point is to say, well, that's absurd because, in the limit, you would get something like a machine that just trims an answer for possible inputs, and that machine wouldn't be intelligent.
+[19:21:05] Unknown: Why?
+[19:21:06] Unknown: Because what matters is not just how you behave, but also how the behavior is produced.
+[19:21:14] Unknown: It's not just what you say, but how or why you say it.
+[19:21:18] Unknown: That's what matters for intelligence.
+[19:21:20] Unknown: Put in another way, what matters is a certain sophistication of the internal information processing mechanisms that leads to the behavior.
+[19:21:30] Unknown: If you are just memorizing answers and are breaking to take them, that's not intelligence.
+[19:21:36] Unknown: So the Turing test is not a good test of intelligence.
+[19:21:42] Unknown: So how can you go beyond the Turing test?
+[19:21:44] Unknown: Well, the the major building way through this in AI research is to use so-called benchmarks.
+[19:21:50] Unknown: Benchmarks are basically just behavioural tests, a bit like exams, for AI systems.
+[19:22:00] Unknown: So it's a fixed set of questions that gives you a score that tells you how well an AI system and potentially a human subject is doing.
+[19:22:11] Unknown: Right?
+[19:22:11] Unknown: You can you can test AI systems on benchmarks, and you can also test human subjects if you want.
+[19:22:17] Unknown: And then your human baseline tells you how humans are performing, and then you can compare whether AI systems fall below the human level or above the human level.
+[19:22:27] Unknown: So there are many, many, many benchmarks that people use in AI research.
+[19:22:31] Unknown: Some of them are inspired by human university exams.
+[19:22:37] Unknown: So, for example, MMLU is one such.
+[19:23:38] Unknown: Top score, meaning that you can't do any better.
+[19:23:42] Unknown: Saturation is the point where the benchmark is no longer meaningful because you can no longer do to get a higher score on the benchmark, and that's the point where the benchmark is no longer a meaningful, useful test because you can no longer determine improvements on that benchmark because essentially the best AI systems are already doing as well as they can on the benchmark.
+[19:24:08] Unknown: Now, the trend over the past few years with improvements of different AI systems, so called large language models, is that they have raced on these benchmarks to get the best scores on the leaderboard and have pretty saturated every benchmark in every single app.
+[19:24:26] Unknown: So, let's take a look.
+[19:24:30] Unknown: So here are some benchmarks in various knowledge or scientific domains.
+[19:24:38] Unknown: You can see here on the x-axis is the release dates of the models, and on the y-axis you have the accuracy of the models on these benchmarks.
+[19:24:51] Unknown: And each color is a different benchmark.
+[19:24:54] Unknown: As you can see, each of these benchmarks, when it's released, the performance from the best model is something like, you know, it ranges from like zero percent to about thirty-five percent.
+[19:25:09] Unknown: As you keep releasing new models, and as models get better, it quickly reaches close to one hundred percent on masterpiece benchmarks.
+[19:25:21] Unknown: So this is an example for knowledge and reasoning.
+[19:25:24] Unknown: Here is another example for coding benchmarks.
+[19:25:28] Unknown: As you can see, you see the same evolution, right?
+[19:25:30] Unknown: You know, when when these benchmarks get released, performance is very bad, around zero percent.
+[19:25:38] Unknown: And now it all starts to saturate around hundred percent.
+[19:25:44] Unknown: Sorry, this is not for coding; this is for mathematical problems.
+[19:25:48] Unknown: Actually, this one.
+[19:25:49] Unknown: So these are for mathematical problems, including functional level math problems.
+[19:25:56] Unknown: This one is for Berlin, so you can see the semi-rotation problem.
+[19:26:01] Unknown: So basically, the trend of your example is that there is a trend towards concentration.
+[19:26:08] Unknown: Here is a particular example in mathematics.
+[19:26:10] Unknown: You might be familiar with international international mathematical Olympiad.
+[19:26:17] Unknown: This is a very competitive international competition in mathematics, where you have six very hard problems that needs to be solved in two days, over five hours per day.
+[19:26:34] Unknown: In 2005, already experimental models from Google DeepMind and OpenAI solved five out of six problems, but in full proofs in natural language within the time limit, and that's about getting a gold medal at this stage.
+[19:26:49] Unknown: So, what we are seeing basically is that the capability profile of frontier AI models is jagged; it's not uniform.
+[19:26:59] Unknown: On the one hand, we have very strong performance on certain sets of problems that includes Olympiad problems, expert science questions, software coding, etc.
+[19:27:11] Unknown: Things that very few people on earth, right?
+[19:27:13] Unknown: Very few humans are so good at.
+[19:27:16] Unknown: So this is quite impressive in the sense that, in a way, this performance is now reaching superhuman level.
+[19:27:25] Unknown: And then, on the other hand, you have these challenges that keep popping up.
+[19:27:30] Unknown: So some of these are, for example, some of the challenges that were effective even on the best models at this time recently.
+[19:27:39] Unknown: So I think you already saw a good example of walking or driving.
+[19:27:42] Unknown: Another one would be something like designing a word or reading a number of books.
+[19:27:47] Unknown: So these are some of the examples on which performance from best models that were good at math was actually quite bad, which is so much surprising if you think that these kind of abilities should cohere together in AI models in the same way they do in human intelligence.
+[19:28:04] Unknown: Is that actually it may be the case that human intelligence or intelligence generally is not just a single thing that can be marginalized as a single score, but it's a set of capabilities that can come apart and maybe they come apart in systems.
+[19:28:22] Unknown: So let's say a bit more about what the score actually shows, what good performance shows.
+[19:28:27] Unknown: So I want to give you a little story on this.
+[19:28:29] Unknown: In the beginning of the 20th century, there was a Horace Pains.
+[19:28:36] Unknown: This is a real story, by the way.
+[19:28:38] Unknown: Who was very famous because he was touring Europe, and it was said that he could perform solved arithmetic questions by answering by just tapping his foot a certain number of times on the floor, instead of his foot.
+[19:28:56] Unknown: So Horace was Hans was from Europe, who is Händler, and he was almost always right when the questioner knew the answer, and almost never right when nobody present knew the answer.
+[19:29:10] Unknown: And it turns out that actually Hans responded to some tiny cues from the person who was questioning.
+[19:29:21] Unknown: So actually, there were some subtle cues in the head movements of the person that was asking the questions, and Hans was picking up on these cues and tapping the hoop and stopping to tap the hoop just at the right time when he was first being cued.
+[19:29:35] Unknown: So Hans was not doing any equipment at all.
+[19:29:38] Unknown: He was actually relying on shortcuts, what we would call in a evaluation shallow cues.
+[19:29:46] Unknown: So this is a kind of a red herring, and an interesting case for AI because it tells you that something can be a system or an organism.
+[19:29:57] Unknown: In this case, of course, a system can be right for the wrong reasons, or for using for this.
+[19:30:02] Unknown: So this connects to an important distinction in computer science between performance and confidence.
+[19:30:10] Unknown: Super to how well a system does on a test, and confidence super to the underlying ability to do the task under pert test conditions.
+[19:30:21] Unknown: For example, students.
+[19:30:23] Unknown: So, so, one, one, one, one important part about these distinct performance of confidence is that in cognitive science, we assume that there is a double dissociation between these two things, meaning that you can have good performance without confidence, and you can have bad performance despite confidence.
+[19:30:42] Unknown: So, in humans, we see how that's the case.
+[19:30:45] Unknown: A student who has memorized test answers, this student can do very well on an exam without having competence, right?
+[19:30:54] Unknown: So you can get good performance without competence.
+[19:30:57] Unknown: And conversely, a student can be very confident and be a very good student and know the material, but panic and do really badly on the exams.
+[19:31:06] Unknown: But having the competence.
+[19:31:09] Unknown: So, if you think of this is what we would call a confusion matrix in science, you know this little table.
+[19:31:18] Unknown: You look at competence versus no competence and good performance versus bad performance.
+[19:31:21] Unknown: The easy cases are the true positives and true negatives.
+[19:31:25] Unknown: So you have good performance that is evidence for competence and bad performance that is evidence for lack of competence.
+[19:31:32] Unknown: You can also have false positives, like cheating student, and you can have false negatives, like the anxious student that, who's an all-nighter, for example, shows up at the exam, pretty exhausted, and comes back.
+[19:31:47] Unknown: And so, what we now know is that the very same double mistake exists for their system.
+[19:31:52] Unknown: This is why we should be very careful how we assess.
+[19:31:55] Unknown: So let's start with performance success
+[19:32:07] Unknown: without rules.
+[19:32:07] Unknown: So suppose I ask you, "What is twenty-three plus forty-four?"
+[19:32:10] Unknown: You would correctly answer sixty-seven, right?
+[19:32:14] Unknown: There are two ways you can get to that answer.
+[19:32:17] Unknown: So you could actually do the calculation in your head, and you can actually have something meaningful, or then get the answer itself.
+[19:32:52] Unknown: Well, it's the sum of twenty-three and forty-seven, and now if you read the answer number, you will again give me the right answer.
+[19:33:42] Unknown: controls that are task irrelevant for you, task irrelevant.
+[19:33:49] Unknown: So, let me give you an example with a model.
+[19:33:51] Unknown: Here is a prompt, a simple prompt, a simple question.
+[19:34:08] Unknown: Oliver gets forty-five queries on Friday.
+[19:34:10] Unknown: Then he gets fifty-eight queries on Saturday.
+[19:34:43] Unknown: You can probably guess why.
+[19:34:55] Unknown: The reason why is because of this sentence at the end.
+[19:35:01] Unknown: "Five of them were a disclosure."
+[19:35:02] Unknown: The models would get confused because of this number 5 here.
+[19:35:08] Unknown: And assume that this additional information is relevant to the calculation, even though it's completely irrelevant.
+[19:35:15] Unknown: Right?
+[19:35:15] Unknown: So it would subtract the smaller q's, even though that doesn't make any sense, because that's not the question that I asked.
+[19:35:21] Unknown: The question is how many q's we're going to have.
+[19:35:37] Unknown: And now that gives you a clue that maybe this model is not as intelligent as we thought it was, and is not doing the task the same as we thought.
+[19:35:55] Unknown: So, remember Netlux machine?
+[19:36:03] Unknown: This machine now is known as a plot.
+[19:36:14] Unknown: Things from a training data and then do predictions.
+[19:36:18] Unknown: Well, no.
+[19:36:18] Unknown: In the
+[19:36:23] Unknown: initial set of cards, right, nobody was exposed to anything like it.
+[19:36:27] Unknown: Let the lookup table evolve.
+[19:36:36] Unknown: And oftentimes, the output of lookup table are really new, right?
+[19:36:37] Unknown: So they are not learning the sentence.
+[19:36:39] Unknown: Nonetheless, language models do memorize some of the words that are trained.
+[19:36:48] Unknown: And of course, that's also very useful, right?
+[19:36:50] Unknown: Because you want them to memorize a lot of stuff, because they want to.
+[19:36:55] Unknown: You want them to have a lot of knowledge for example, by these areas that are useful for processes.
+[19:37:05] Unknown: So the real question is, how far and how reliably can they generalize to problems beyond the specific version of problems they have seen in their training?
+[19:37:17] Unknown: So one way to think about this is in terms of interpolation and extrapolation.
+[19:37:22] Unknown: So I will give you a simple example.
+[19:37:23] Unknown: Suppose you have a very simple function, given an input, the function is doing, and suppose this is the true function that you're trying to learn.
+[19:37:37] Unknown: So you are going to train an AI model to try to learn that.
+[19:37:41] Unknown: How are we going to train?
+[19:37:44] Unknown: I'm going to sample some inputs and sample the output for a simple function.
+[19:37:53] Unknown: So here is our training data.
+[19:37:55] Unknown: We sampled four points, and we want the model to learn the underlying function based on this set.
+[19:38:03] Unknown: And this is a great toy example to use for
+[19:39:14] Unknown: But actually, but I think that you go beyond that.
+[19:39:47] Unknown: To be equivalent to perfect generalization, so
+[19:40:07] Unknown: I just took a very simplified illustration.
+[19:40:12] Unknown: It's not just we ask whether models are useful; we don't want to know whether they're really enough.
+[19:40:18] Unknown: But the real question is how good they are at generalizing, at extrapolating beyond what they're sitting with.
+[19:40:27] Unknown: And so, curious, just to say, the model that just memorizes will fail on any new inputs.
+[19:40:37] Unknown: Models that anticipate will fail, and it's beyond the benchmark.
+[19:40:41] Unknown: Models that anticipate will see it on it.
+[19:40:45] Unknown: The problem with benchmarking is what we call data leakage.
+[19:40:53] Unknown: Models are trained on textbook inputs, and so it's quite hard to actually prevent AI models from having access to the benchmarks and, therefore, cheating in a way by memorizing answers.
+[19:41:08] Unknown: You might have access to responses similar to the ones I've done before.
+[19:41:10] Unknown: There might be a regime where there are interpolations between similar problems or similar forms of the service structure that cannot generalize.
+[19:41:23] Unknown: So, high promise for.
+[19:45:47] Unknown: Look at whether people overlap between the two tendencies.
+[19:45:55] Unknown: So, how many words they have in common.
+[19:45:57] Unknown: And if they have a lot of words in common, you could give the correct answer.
+[19:46:01] Unknown: That was one of the benchmarks used for that task, natural language inference benchmark.
+[19:46:07] Unknown: So basically, the benchmark was solvable by using a shortcut.
+[19:46:12] Unknown: Now, if you here change the words around, you move actor here and judge here, and now you have the actor was paid by the judge.
+[19:46:21] Unknown: You remove the entailment relation, but you keep the lexical overlap, and now the models are failing.
+[19:46:27] Unknown: Still giving the still saying that there is entailments.
+[19:46:30] Unknown: They're using the shortcut.
+[19:46:32] Unknown: The shortcut is no longer effective.
+[19:46:34] Unknown: So, my colleagues showed that when you introduce this task irrelevant variation in the benchmark, you get a breakdown in the performance that betrays the fact that the models are not actually competent.
+[19:46:52] Unknown: So that's an example of good performance despite competence, where the performance breaks down when you introduce variations.
+[19:47:02] Unknown: So that relates to a well-known problem in benchmarking called Goodhart's law.
+[19:47:08] Unknown: Goodhart's laws say that when a measure becomes a target, it ceases to be a good measure.
+[19:47:15] Unknown: And the idea is that when AI developers aim at improving performance on a benchmark, a high score tells us less and less as time goes by about the ability behind the benchmark.
+[19:47:27] Unknown: Why?
+[19:47:27] Unknown: Because if you try to ruthlessly optimize for good score on a benchmark, you are going to tend to have models that discover shortcuts to get good performance on that benchmark, instead of learning the underlying competence.
+[19:47:41] Unknown: So that's a big problem, also known as gamification, where basically the model learns to gamify the benchmark to try to game it instead of learning the underlying competence.
+[19:47:54] Unknown: That's performance despite incompetence.
+[19:47:56] Unknown: What about failure despite competence?
+[19:48:00] Unknown: How could that happen?
+[19:48:02] Unknown: So here is a funny.
+[19:48:30] Unknown: A certain age, right?
+[19:48:32] Unknown: So, for example, when they're four and a half months old, they tend to drop things that they're eating.
+[19:48:44] Unknown: So, one question is: Why is that the case?
+[19:48:46] Unknown: Right?
+[19:48:46] Unknown: Is it because they don't know that objects fall?
+[19:48:50] Unknown: So maybe they haven't yet acquired the competence for intuitive physics, and know that if you just drop an object in mid-air, it's going to fall.
+[19:49:01] Unknown: So maybe they don't have good intuitions about gravity, or for some other reasons.
+[19:49:05] Unknown: You can actually test this.
+[19:49:08] Unknown: So you you put a baby in front of a screen or in front of a demonstration platform, and you show them the video, for example, of someone pushing a block onto a platform, which is a possible event, and another one where it's pushing the block past the platform, which is an impossible event because then the block stays suspended in mid air.
+[19:49:37] Unknown: You look at how long the baby looks at each of the stimuli, and you use that as a proxy for surprise.
+[19:49:44] Unknown: So the idea is that the longer the baby looks, the more surprised the baby is.
+[19:49:49] Unknown: And so, the underlying reasoning here is that if the baby is more surprised.
+[19:50:30] Unknown: Factor and of the feasibility, which is very strict, also well.
+[19:50:37] Unknown: So, in other words, is the case where you have performance failures despite standardising concepts.
+[19:50:43] Unknown: That's not always the case.
+[19:50:44] Unknown: Here is another example of sentence in a study of animal cognition.
+[19:50:49] Unknown: I would sing symphony that was nicknamed "Main Symphony" due by reference to Noam Chomsky, and that symphony had been trained to use American Sign Language.
+[19:51:06] Unknown: Speech sounds, you can actually learn spoken
+[19:51:12] Unknown: language, but you have to try to teach that student how to use handwriting.
+[19:51:19] Unknown: That, then, we're
+[19:51:23] Unknown: wondering whether that sequence can actually create a sentence about drama.
+[19:51:32] Unknown: So here are some of the signs that since the simulation we learned, it actually learned 125 signs in its first four years.
+[19:51:42] Unknown: We combine, we combine these parts, right?
+[19:51:48] Unknown: We say things like "me me," etc.
+[19:51:51] Unknown: These are some of the most frequent two-time things that Nienchinski could put together.
+[19:51:58] Unknown: The question is: Is that evidence for grammatical competence?
+[19:52:04] Unknown: So to test this, you can look at longer, longer constructions from Ancient Greek and check whether he added signs as grammatical structure.
+[19:52:15] Unknown: And you can see that oftentimes Ancient Greek would just add signs that are redundant, that don't add any new information.
+[19:52:24] Unknown: They would just kind of repeat himself.
+[19:52:27] Unknown: This is very rare in actual children's speech, but it's definitely very rare.
+[19:52:34] Unknown: And here is the longest recorded utterance from an infant: the longest series of signs in one single episode.
+[19:52:43] Unknown: Like, give orange me, give it orange me, give orange give me, give orange give me you.
+[19:52:50] Unknown: So this is only using five signs that are just basic signs.
+[19:52:54] Unknown: Did or did we get you?
+[19:52:56] Unknown: Okay.
+[19:53:01] Unknown: So now, if you look at how children, how many words children use in utterances as they grow older, but for hearing children that use spoken language and for deaf children that use sign language, you can see that as they grow older, the average length of their utterances increases.
+[19:53:30] Unknown: This is measured by looking at the different different words that are shown here, is not the repeating of the same word.
+[19:53:38] Unknown: If you look at Nishimkin right here, it didn't really change as Chibamz aged.
+[19:53:45] Unknown: So these points show the real difference in confidence.
+[19:53:48] Unknown: It's not just a difference in performance; it's actually a difference in confidence.
+[19:53:52] Unknown: So we have now these two cases: young children, where performance failure is not evidence of incompetence, and this chimpanzee, where performance failure actually points to a real difference.
+[19:54:33] Unknown: In a picture, and you add
+[19:54:38] Unknown: some carefully crafted noise to that image, that results in the image on the right-hand side here.
+[19:54:44] Unknown: That's something that looks to us still like a panda, but now with the added noise, the model classifies it as a human with high confidence.
+[19:54:53] Unknown: So this is what we would call an adversarial example.
+[19:54:56] Unknown: So it's a case where you get a failure from your vision AI model that no human would ever make, or no human would ever make that kind of mistake, and that was used to point to a difference in competence at visual recognition between human beings and AI systems.
+[19:55:17] Unknown: So what should we make of this?
+[19:55:20] Unknown: Need to look at that image and think about what you see.
+[19:55:24] Unknown: You can write in your, you can write in the in the chat what you think that is.
+[19:55:29] Unknown: What kind of animal is it?
+[19:55:35] Unknown: From you, a few seconds.
+[19:55:41] Unknown: We have a suggestion for a fox, a dog, a cat, dog, yeah.
+[19:55:49] Unknown: So the majority answer is dog.
+[19:55:53] Unknown: Now it turns out that this is an image that was also crafted by adding some subtle noise on an original image.
+[19:56:01] Unknown: Original image on the left-hand side.
+[19:56:04] Unknown: It's actually a cat, and just by adding this kind of adversarial perturbation, subtle noise to the image, you make it look like a dog.
+[19:56:14] Unknown: But actually, it's you know adding very, very little additional information to the image.
+[19:56:20] Unknown: Just adding some subtly crafted noise.
+[19:56:23] Unknown: So basically, you can also do this kind of adversarial perturbation or adversarial attack on human vision, and we are also susceptible to this same performance failure.
+[19:56:35] Unknown: So it's not as straightforward as saying that you know AI models are susceptible to performance failures, and we are immune to the same performance failures.
+[19:56:46] Unknown: Now here is another
+[19:56:52] Unknown: further experiment that was done by Chas Firestone and Tomkins.
+[19:56:58] Unknown: These, when you get this kind of example where the model system is classifying images, they are doing so on the basis of a multi-choice questionnaire basically.
+[19:57:10] Unknown: They have to pick a label among several labels.
+[19:57:14] Unknown: So, let me ask you: What do you think was the label that was picked for these images by AI vision models?
+[19:57:23] Unknown: So, first image: Do you think the models picked crossword puzzle, bagels, car dish, or school bus?
+[19:57:30] Unknown: And second image, and then third image.
+[19:57:34] Unknown: Same question.
+[19:57:35] Unknown: Do you think which which label do you think was picked by the AI model?
+[19:57:50] Unknown: So you have to give an answer for each image.
+[19:57:52] Unknown: This is the AI models give a different answer for each image.
+[19:57:58] Unknown: Okay.
+[19:57:58] Unknown: So for the first one, crossword puzzle was answered even by the AI model.
+[19:58:03] Unknown: Second one, school bus turned one table.
+[19:58:06] Unknown: So basically, what transpires and found that human judges, human readers, could actually guess what the AI models would guess, right?
+[19:58:17] Unknown: So when you limit humans in the same way machines are being limited in testing, you can actually get the same patterns of cancers.
+[19:58:30] Unknown: So a further issue that is analogous to what we saw with the case of the babies and dropping drugs is the effect of test demand on performance.
+[19:58:41] Unknown: Suppose I want to test how good you are at predicting the next word in a sentence.
+[19:58:49] Unknown: I ask you what word is most likely to come next in the following text.
+[19:58:53] Unknown: I take my coffee with pen and blank.
+[19:58:58] Unknown: Now that requires you to interpret the question, predict the next word of the sentence, turn the prediction into an answer, and then we measure that prediction.
+[19:59:07] Unknown: So the things in yellow here are some additional past demands that are that are auxiliary to the thing in the middle, which is speaking the next foreign sentence, which is what we are really trying to measure.
+[19:59:21] Unknown: A simpler way to test this, which is to just give you I take my coffee with cream and blank, and then look for a language model at the probability of the next word, sugar, and measure this directly.
+[19:59:40] Unknown: For a human, you could look at the reaction, the reading time for the next word, and that would give you a similar approximation.
+[19:59:46] Unknown: So this is a much simpler test that has a lower task demand because you're not introducing this additional extra tasks task demands in yellow here.
+[19:59:58] Unknown: So you can have a model, especially a small language model, would fail on the test on the left hand side here, but it would succeed on the test on the right hand side.
+[20:00:08] Unknown: So this is another case where you can have a failure of performance, despite underlying competence, where the failure is simply due to the additional task demands.
+[20:00:21] Unknown: Another way you can show that different language models is by giving them time to think before they give an answer.
+[20:00:28] Unknown: So, if you use modern language models like DeepSeek model, for example, you know that they have this thinking mode where they can think before giving an answer.
+[20:00:37] Unknown: So, if you ask the question like, "If the day after tomorrow is two days before Thursday, what day is today?"
+[20:00:42] Unknown: I tested this with one of anthropic's models.
+[20:00:46] Unknown: If you ask the model to respond without doing any thinking, in my tests it was only right one out of ten times, and would give often the wrong answer, like Saturday.
+[20:01:00] Unknown: Now, if you let the model think before giving an answer, then in this case it was right ten out of ten times.
+[20:01:08] Unknown: That's an example of the effect of thinking before you speak, and again, that can exemplify that a performance failure is not always good evidence for underlying lack of competence.
+[20:01:22] Unknown: It can be that you actually need to adjust your test to let the competence be expressed in performance.
+[20:01:32] Unknown: So here is another example.
+[20:01:40] Unknown: Models, language models, actually don't have direct access to the number of letters in a word.
+[20:01:47] Unknown: See our tokens, and tokens are some whole words or or word parts, but they are not individual letters.
+[20:01:59] Unknown: So, counting across token boundaries adds a task demand that is unrelated to counting itself.
+[20:02:10] Unknown: So here, if you count, you have one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve R's.
+[20:02:21] Unknown: And that could be due, again, to a failure given the additional task demands of trying to recover individual letters from patterns.
+[20:02:37] Unknown: That's an interesting case where potentially we could argue that the failure on this task is also due to the task demands.
+[20:02:49] Unknown: Okay.
+[20:02:51] Unknown: So I want to conclude this lecture by saying a few things about how you can further mitigate for issues when evaluating AI systems.
+[20:03:06] Unknown: So there are two main comparative biases when comparing AI systems and humans.
+[20:03:11] Unknown: Anthropomorphism, which is attributing human-like traits without adequate evidence, because the behavior looks human, and the other one that is less discussed is anthropocentrism, which involves denying a human-like traits without adequate evidence, because we judge it by narrowly human-specific standards.
+[20:03:33] Unknown: So, to test different rival hypotheses about how a model achieves a certain pattern of performance or behavior, as I suggested, we should change, introduce to the task variations that are task irrelevant, so changes that shouldn't matter to whether or not you get the right answer.
+[20:03:54] Unknown: Check whether that changes the model's performance.
+[20:03:57] Unknown: Secondly, we should use novel questions that are not memorized in the training data.
+[20:04:01] Unknown: Thirdly, we should have fair testing conditions that try to rule out the effect of unfavorable test items.
+[20:04:09] Unknown: We can do, and I haven't talked much about this, but I'm happy to say more in the Q and A.
+[20:04:18] Unknown: Is we can look inside the model as well, and try to understand how it processes information.
+[20:04:49] Unknown: perfect, but actually be more realistic about what's really important to the system.
+[20:04:58] Unknown: And we should be careful about the assumption that when AI systems solve a problem by using a different method than we do, that means that they lack the underlying ability.
+[20:05:11] Unknown: Because it could be that a different method is still a general one.
+[20:05:16] Unknown: So it might be that models, AI models, perform certain tasks in a very different way from what we do, but ah still, still have a general competence.
+[20:05:28] Unknown: So I'll just give you one example from arithmetic.
+[20:05:32] Unknown: This is from this kind of work that tries to look inside AI models, reverse engineer how they work on the inside, instead of just looking at their behavior.
+[20:05:40] Unknown: We call interpretability research.
+[20:05:44] Unknown: So this is an example from research by Anthropic, looking at how language models calculates something like thirty-six plus fifty-nine.
+[20:05:54] Unknown: So it turns out language models have two parallel computations going on inside when they do this.
+[20:06:00] Unknown: First, they have a kind of rough estimate of how big the sum is, and they first compute that the sum is going to be in the ballpark of ninety-two, because each of the individual numbers that are summed, one of them is near thirty-six, and the other one is near sixty.
+[20:06:29] Unknown: There is a different kind of computation that figures out what the final last digit of the sum is.
+[20:06:38] Unknown: So it takes the last digit of thirty-six and the last digit of nine.
+[20:06:42] Unknown: It adds six and nine, gets fifteen, and determines that fifteen ends with five.
+[20:06:48] Unknown: Then it combines these two things.
+[20:06:50] Unknown: Have a sum in the ballpark of ninety-two, and it ends in five, and so the answer is ninety-five because ninety-five is the closest number to ninety-two that ends in five.
+[20:07:00] Unknown: Now, from our human perspective, it's a very weird way to compute addition.
+[20:07:05] Unknown: We'd work through that path, but it turns out that this is how some agglutinals do it at least, and it seems kind of weird to say that a language rules that does addition in this way is not competent addition, even though it can do it reliably.
+[20:07:21] Unknown: So maybe the fact that it doesn't do it in the way we do it is not that relevant here.
+[20:07:26] Unknown: Skip this in the interest of time, and I just want to come back to this idea that intelligence is a single thing.
+[20:07:41] Unknown: We have lots of reasons to think that intelligence is a combination of many different abilities.
+[20:07:48] Unknown: This is from a paper that tries to give a definition of general intelligence and break it down into several domains.
+[20:07:56] Unknown: It tries to estimate where different models fall on these different dimensions.
+[20:08:01] Unknown: You can see not only on this paper, recent AI models like GPT-5 still perform low on these different dimensions, but also the performance is very uneven across different dimensions.
+[20:08:17] Unknown: You get again that jagged profile, where the models are getting reboot at some dimensions, like mathematical ability, and they are still very low on some other dimensions
+[20:08:32] Unknown: of intelligence.
+[20:08:33] Unknown: So, one recommendation based on this analysis is that, first of all, a high benchmark score doesn't tell you how a model will do on your task.
+[20:08:42] Unknown: Try it on your own problems, especially new ones.
+[20:08:46] Unknown: You should reward the question or add any relevant detail.
+[20:08:49] Unknown: Say and test whether the answer changes.
+[20:08:53] Unknown: You should assess or test the model with the appropriate background conditions to rule out the effect of high task demands, for example, leading right out reasoning steps, and you check the answers that you can verify yourself before relying on.
+[20:09:22] Unknown: So, as I said, we find that double dissociation between performance and competence, even in AI models.
+[20:09:29] Unknown: It's not just humans that exhibit instances of false positives and false negatives, but we also have, as I argued, instances of models being right for the wrong reasons (false positives) and being wrong for the wrong reasons (false negatives).
+[20:09:47] Unknown: So, in conclusion, today's AI systems show a jagged profile of abilities that no single score captures, and a test score or benchmark score is evidence about an ability only through an inference to the best explanation of that score, and that inference can fail in both directions: in the false positive direction, in the false negative direction.
+[20:10:11] Unknown: So the new science of AI evaluation that I've talked about should test for rival explanations, rival hypotheses for the performance, and ideally also try to look inside the models using these interpretability methods I've alluded to when behavior can't decide, can't arbitrate between alternative interpretations.
+[20:10:32] Unknown: And I will end here.
+[20:10:33] Unknown: Thank you very much.
+[20:10:50] Unknown: So, should I directly answer questions from the chat?
+[20:11:06] Unknown: Yeah, I go to the Q&A area.
+[20:11:11] Unknown: I see.
+[20:11:12] Unknown: Okay.
+[20:11:13] Unknown: So, first question.
+[20:11:14] Unknown: Hi, Professor.
+[20:11:16] Unknown: In the three
+[20:11:19] Unknown: Human instead of
+[20:11:25] Unknown: asking them to answer practical questions, if you choose the way of dealing with things, will the output change?
+[20:11:31] Unknown: Thank you.
+[20:11:32] Unknown: Yeah, so that's a good question, and indeed you're right.
+[20:11:34] Unknown: I mean, the Turing test is no longer used really as a test of intelligence capabilities, right?
+[20:11:42] Unknown: So it's just really a historical test that Turing test was important, and Turing thought that conversation was the right way to assess intelligence.
+[20:11:51] Unknown: But modern benchmarks that I've talked about they indeed use, as you could hear, answering practical questions or asking questions instead of just chatting in conversation, right?
+[20:12:02] Unknown: So, answering knowledge questions, reasoning questions, mathematical questions, science questions, coding questions, etc.
+[20:12:09] Unknown: So, we have indeed moved from conversation to targeted questions.
+[20:12:14] Unknown: Okay, other question here: LLMs are trained to model human natural language.
+[20:12:21] Unknown: Yet, natural language is merely a representation of the real world; may not accurately capture the physical world.
+[20:12:26] Unknown: Is this considered one of the future directions for LLM development?
+[20:12:30] Unknown: I ask this because, in my deep learning research, I found that LLMs can provide.
+[20:12:37] Unknown: Okay, very good question as well.
+[20:12:40] Unknown: So, to answer your first question, yes, this is considered definitely an ongoing research direction.
+[20:12:47] Unknown: Now, our background language model, strictly speaking, are only trained on language data.
+[20:12:54] Unknown: At least the original language models were.
+[20:12:57] Unknown: Nowadays, if you use any of the frontier language models that you can find, you know, online, DeepSeek, Qwen, etc., most of them are also trained on images.
+[20:13:09] Unknown: So they are starting to become what we say, what we call multi-modal.
+[20:13:13] Unknown: They have the ability to process different modalities, and you have even models like Gemini from Google.
+[20:13:53] Unknown: Generalization of language models because they are now trained on lots of tasks that are not just language tasks.
+[20:14:01] Unknown: So the frontier models from OpenAI and Anthropic, for example, can now control robots quite well.
+[20:14:08] Unknown: If you hook them up to a robotic body and you have them control robotic robotic arms, for example, to pick up objects, they're getting really good at that.
+[20:14:17] Unknown: Right.
+[20:14:18] Unknown: So it's not a given that language models, when you add additional modalities and you train them on a lot of data beyond language, can't actually form a representation of the real physical world and perform tasks in the real physical world.
+[20:14:34] Unknown: Now, the question, the second question you you ask or the second point you make here, is about providing helpful ideas that turn out not to be feasible in practice.
+[20:14:44] Unknown: It's possible that this relates to something more than just the ability to reason about physical world, but it also might relate to the general problem we have, which is that language models, at least the frontier models we have today, tend not to be very good at coming up with novel strategies, novel solutions, novel ideas, specifically in frontier research domains.
+[20:15:11] Unknown: So that's what.
+[20:15:12] Unknown: Sometimes called research tastes.
+[20:15:14] Unknown: Right?
+[20:15:15] Unknown: When you're a researcher, you have intuitions, you have certain tastes for interesting questions and interesting solutions.
+[20:15:22] Unknown: And language models are always good at that.
+[20:15:23] Unknown: They're very good at executing, at writing code, and executing solutions that you give to them.
+[20:15:28] Unknown: But if you just let them come up with their own solutions, they're not always very good.
+[20:15:32] Unknown: That might be just a failure mode of current models.
+[20:15:36] Unknown: Okay.
+[20:15:36] Unknown: Next question.
+[20:15:38] Unknown: Hi, Professor.
+[20:15:40] Unknown: I completely agree that evaluating AI's true intelligence is challenging, especially when current benchmarks are unsaturated or contaminated.
+[20:15:48] Unknown: This leads to a tricky situation: academia is often criticized for benchmark chasing, producing high scores that don't work in reality, while top industry labs are essentially becoming black boxes, bypassing peer review and breakthroughs.
+[20:16:02] Unknown: In your perspective, has academic research lost its credibility in the eyes of big tech?
+[20:16:07] Unknown: And more importantly, how can academia establish new evaluation patterns to reflect during the world's nervousness, fronting the scoring game?
+[20:16:15] Unknown: That's a very good question.
+[20:16:18] Unknown: So I would say that bench.
+[20:16:20] Unknown: Yes.
+[20:16:24] Unknown: Sorry, you.
+[20:16:24] Unknown: You said something.
+[20:16:32] Unknown: Okay.
+[20:16:34] Unknown: So one thing that we see, you know, happening a lot in labs, actually, more than in academia, I would say, is besides this kind of benchmark chasing or leaderboard chasing, to get the best performance, the best scores on benchmarks, because that's extremely valuable for AI companies, because the way you determine what's currently the best model is through benchmarks.
+[20:16:59] Unknown: So companies are engaged in this race to get the best scores on the benchmarks, and they, you know, they spend millions and millions of dollars just to beat the benchmarks and get the best score on the leaderboard.
+[20:17:13] Unknown: So I would say, if anything, this kind of benchmark chasing phenomenon is something that happens more in industry than in academia, because there are huge commercial incentives to be the best, have the best model on the leaderboards, and so that's worth investing huge amounts of money, and that's worth trying to beat the benchmarks at all costs, including, unfortunately, in cases where you end up contaminating the training of your model, or you end up.
+[20:17:41] Unknown: Training your model to use shortcuts to beat the benchmark.
+[20:17:46] Unknown: Now, it is also the case that, as you suggest here, it's hard for academia to keep up with some of the research that is done in the leading industry labs.
+[20:17:57] Unknown: I think one of the challenges, especially for benchmark creation, because most of the benchmarks that are used in the field have come from academia, is what I've shown with this saturation, right?
+[20:18:14] Unknown: That happens really quickly.
+[20:18:15] Unknown: So if we go back to this slide, you can see that you know benchmarks are saturated at an incredibly fast, increasingly fast rate.
+[20:18:27] Unknown: So it's hard to come up with new evaluations that are actually useful.
+[20:18:31] Unknown: And academia is really challenged with that with that problem.
+[20:18:35] Unknown: I think there are still is still a very great area of research.
+[20:18:39] Unknown: So I think there is a lot of great research to be done in designing a better foundation.
+[20:18:45] Unknown: - Can we just perceive AI as a kind of new creature?
+[20:18:50] Unknown: - Yeah, so why, I guess the question here we've seen that right now is instead of having an AI that is answering the question, that means we have an AI that is also asking questions.
+[20:19:10] Unknown: This is an active research direction.
+[20:19:13] Unknown: In fact, if you look at few coding agents, some of them now have have been trained to ask follow-up questions.
+[20:19:23] Unknown: So that's the case case for Code Code, for example, Monotropic.
+[20:19:30] Unknown: There is also another company called Humans End that has been developing a model that can simulate user, human users or human user input, so that you can then train a model to interact with the human user in more natural, natural ways.
+[20:19:50] Unknown: And so that model that simulates human users is a model that can ask questions, right?
+[20:19:54] Unknown: Human users ask questions, but I think I think it's as I was saying.
+[20:20:01] Unknown: You know, having a model that is not just executing instructions, but like coming up with new ideas, really new, deep, original ideas in research, that's a challenging, a challenging challenge, challenging area of research.
+[20:20:16] Unknown: That's active area of research.
+[20:20:18] Unknown: Now your other question is: Can we perceive AI as a new kind of a creature?
+[20:20:25] Unknown: That's a slightly complicated question because it kind of depends what you mean by that.
+[20:20:33] Unknown: Be careful with that framing, because at the end of the day, AI systems are not creatures in the sense that they are organisms.
+[20:20:44] Unknown: Right?
+[20:20:44] Unknown: They are algorithmic programs that are trained on a computer.
+[20:20:50] Unknown: Now, it is true that there might be a sense in which it is meaningful to look at them as new kinds of minds.
+[20:20:58] Unknown: It is not absurd to think that they have the capacity to reason and think.
+[20:21:03] Unknown: In some sense, it is not absurd to think they might have the capacity even to have goals and to have beliefs, like states as well.
+[20:21:15] Unknown: So, if that's the case, perhaps it makes sense to consider them increasingly as having something like a kind of artificial mind.
+[20:21:24] Unknown: Now, importantly, that doesn't mean they have all the properties of human minds, right?
+[20:21:29] Unknown: So, you can differentiate between different kinds of mind-like properties or different kinds of mental properties.
+[20:21:36] Unknown: And just because they have the capacity to think and reason and plan, maybe they have goals and beliefs in some limited sense, doesn't mean that they automatically have something like consciousness or subjective experiences.
+[20:21:48] Unknown: So these things can come apart.
+[20:21:51] Unknown: I mean, this is another area of research.
+[20:21:54] Unknown: I myself am very interested in that question.
+[20:21:56] Unknown: I do a lot of work on the cognitive evaluation of AI systems, and I have a lot of colleagues who work on these questions, including the question of whether, in principle, an AI system could have conscious experiences.
+[20:22:08] Unknown: That would be careful with the framing of looking at the systems as new creatures.
+[20:22:16] Unknown: There is a sense in which that could be the case.
+[20:22:19] Unknown: There is a sense in which it could we could treat them as new kinds of minds.
+[20:22:24] Unknown: But you always have to resist the tendency to anthropomorphize them by just looking at what it means for a human to be a creature, or even for an animal like a cat or a dog to be a creature, and imports all of these properties onto AI systems.
+[20:22:40] Unknown: As I've said, the better approach is the kind of divide and conquer approach, where you just break down the question into different individual capacities for thinking, for reasoning, for planning, for beliefs, for goals, etc., and assess the systems on these different capacities instead of just asking very, very general questions like "Is it a creator or not?
+[20:23:02] Unknown: Does it have a mind or not?"
+[20:23:07] Unknown: Okay.
+[20:23:07] Unknown: Are there any other questions?
+[20:23:10] Unknown: I don't see any other in the Q and A area.
+[20:23:15] Unknown: We do have seven minutes left, I believe.
+[20:23:20] Unknown: Okay, professor.
+[20:23:22] Unknown: Well, professor, you see from, you see from the chat, there is a last question.
+[20:23:32] Unknown: Dear Professor, why the widespread adoption of AI?
+[20:23:36] Unknown: How do you think ordinary workers like us should respond to the fierce competition between humans and AI in in the workspace?
+[20:23:44] Unknown: So, with the rest of us.
+[20:23:45] Unknown: So that's a very that's a very good question.
+[20:23:48] Unknown: I think it's a very difficult question.
+[20:23:50] Unknown: Satisfying answer in the sense that I do think not only is there widespread adoption of AI, but AI at the frontier is progressing really quickly and even increasing in pace.
+[20:24:08] Unknown: So I think the answer to that question is not just something that is for human workers to figure out.
+[20:24:20] Unknown: I think it's also for regulatory agencies to figure out and for governments to figure out.
+[20:24:28] Unknown: We need some regulation to prevent a scenario where we have a mass replacement of human workers due to automation, and therefore mass unemployment and growing inequality and civil unrest because of mass unemployment.
+[20:24:48] Unknown: Right.
+[20:24:50] Unknown: So that's it.
+[20:24:51] Unknown: As a as a as a human worker, I think one of the things you can do is, first of all, try to stay up to date with the progress of AI, and to the extent that you are allowed to use AI in your work, try to leverage the way in which the ways in which you can use AI effectively and productively.
+[20:25:10] Unknown: This is also quite tricky because when you use AI, there are good and bad ways to use it, and some of the bad ways to use it would be ways that are gradually eroding your own abilities, drive you less capable as a human worker and as as human thinker.
+[20:25:31] Unknown: I see this in a lot in academia with students.
+[20:25:34] Unknown: You start using AI to generate your essays, for example, or answer essay questions for you, then you will quickly end up losing the ability to think for yourself.
+[20:25:50] Unknown: And the whole point of education, the whole point of university, is to acquire this kind of critical thinking skills that enable you to think for yourself.
+[20:26:00] Unknown: So I think you should make sure that you leverage AI in the ways that are productive and useful and effective, that are not also eroding your own skills and your own competence and your own critical thinking, and then make sure that you don't default to using AIs when you can instead use your own mind.
+[20:26:25] Unknown: Right, and so that way you can stay at the edge.
+[20:26:28] Unknown: But also preserve the edge of your mind, right?
+[20:26:32] Unknown: Stay sharp, because we will get to a world where there are people who have grown up with AI, who use AI for everything, and no longer have the ability to solve.
+[20:26:44] Unknown: My personal condition is that a few years from now, people who have kept the ability to think critically for themselves, human beings, will be values, because there are many domains where we will always need some human involved in the loop that can actually have some good judgments and some good ability for critical thinking to evaluate the responses from AI.
+[20:27:12] Unknown: Evaluate the questions we should be asking to AI, evaluate the solutions, and so on.
+[20:27:17] Unknown: And so, you know, as a human, if you are up to date with the frontier of AI, but also staying sharp and staying autonomous and not completely outsourcing everything for AI, I think you will have an edge.
+[20:27:30] Unknown: So that will be my answer.
+[20:27:32] Unknown: Will involve also hopefully some some global coordination from from governments and regulators.
+[20:27:46] Unknown: Professor, because right
+[20:27:52] Unknown: now the time is almost up, it is really our great honor to have you this evening.
+[20:27:56] Unknown: I think the experience received by learning from you will bring all of us having a very good field and rewarding knowledge, believe me.
+[20:28:03] Unknown: Thank you so much.
+[20:28:04] Unknown: And we do hope that you look forward to seeing you again.
+[20:28:08] Unknown: And we hope that Professor Raphael, you are going to have a nice day.
+[20:28:11] Unknown: And we also hope each and every student, you are going to have a nice evening.
+[20:28:15] Unknown: Thank you so much.
+[20:28:16] Unknown: Thank you.
+[20:28:16] Unknown: Thank you.
+[20:28:21] Unknown: Thank you very much.
+[20:28:22] Unknown: Thank you for having me.
+[20:28:25] Unknown: Yeah, welcome.
+[20:28:27] Unknown: 好，啊，我就可以把我的讲课权限收回来了。

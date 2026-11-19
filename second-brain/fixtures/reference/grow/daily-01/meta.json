@@ -1,0 +1,33 @@
+{
+  "sample_id": "daily-01",
+  "category": "grow",
+  "kind": "daily",
+  "title": "每日回顾 2026-11-12：在AI升学规划、教育思辨与内容创作中，逐渐勾勒未来方向。",
+  "date": "2026-11-12",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "conversations_count": 4,
+  "omitted_fields": [
+    "email_summary",
+    "calendar_summary",
+    "account_summaries",
+    "locations",
+    "photos"
+  ],
+  "related_samples": [
+    "classroom-01",
+    "classroom-04",
+    "project-01"
+  ],
+  "notes": "已删除邮件摘要、日历明细、位置、照片，以及经期/穿搭/社团生活等私人段落；保留升学规划、比较教育课堂与 AI 评估讲座主线。",
+  "scrubbed_fields": [
+    "用户真名",
+    "本校与目标院校",
+    "精确绩点",
+    "邮件账号与邮件正文",
+    "精确地址与经纬度",
+    "民族与生源地表述（已删除）",
+    "私人生活段落（已删除）",
+    "原始每日回顾编号"
+  ]
+}

@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaMind · 个人记忆与教学 Agent</title>
+<style>
+  :root{
+    --yellow:#ffd900; --yellow-soft:#fff3a8; --ink:#24241b; --muted:#76766d;
+    --line:#e7e7de; --cream:#fdf5cd; --bg:#f7f7f2; --card:#ffffff;
+    --red:#c8503c; --green:#2f6f4e; --amber:#b07d1a; --violet:#6b5bd2;
+    --shadow:0 10px 30px rgba(36,36,27,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:inherit}
+  a{color:inherit;text-decoration:none}
+  .app{display:flex;min-height:100vh}
+
+  /* ============ 左侧导航 ============ */
+  .sidebar{width:232px;flex:none;background:#fff;border-right:1px solid var(--line);
+    padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--yellow);
+    display:grid;place-items:center;font-weight:800;font-size:22px;color:var(--ink)}
+  .brand b{display:block;font-size:19px;letter-spacing:-.3px}
+  .brand span{display:block;font-size:9px;letter-spacing:1.4px;color:var(--muted)}
+  .navlabel{font-size:11px;color:var(--muted);padding:0 10px 8px;letter-spacing:.4px}
+  .nav{display:flex;flex-direction:column;gap:5px}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;
+    font-size:14px;color:#3d3d33;cursor:pointer;transition:.15s}
+  .nav a:hover{background:#f6f5ee}
+  .nav a.on{background:var(--yellow);font-weight:700}
+  .nav a .ic{width:20px;text-align:center;font-size:15px}
+  .sidebar .spacer{flex:1}
+  .side-card{border:1px solid var(--line);border-radius:14px;padding:11px 12px;
+    font-size:12px;color:var(--muted);background:#fbfbf7}
+  .side-card b{color:var(--ink);font-size:12.5px}
+  .side-user{display:flex;align-items:center;gap:9px;margin-top:14px;padding:8px 4px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:700}
+  .side-user small{display:block;color:var(--muted);font-size:11px}
+
+  /* ============ 主区域 ============ */
+  .main{flex:1;min-width:0;padding:22px 30px 70px;max-width:1320px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}
+  .crumb{font-size:11.5px;color:var(--muted);letter-spacing:.8px}
+  .crumb b{color:var(--ink);letter-spacing:0}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;
+    padding:8px 14px;font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:#cfcfc2;transform:translateY(-1px)}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn.yellow{background:var(--yellow);border-color:var(--yellow);font-weight:700}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:5px 10px;font-size:12px;border-radius:9px}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .page{display:none;animation:fade .2s ease}
+  .page.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* ============ Hero ============ */
+  .hero{position:relative;overflow:hidden;border-radius:24px;padding:26px 30px;
+    background:linear-gradient(110deg,#ffd900,#ffe660 55%,#fdf5cd);
+    display:flex;justify-content:space-between;align-items:center;gap:24px;
+    transition:.2s}
+  body.jury .hero{box-shadow:0 0 0 4px rgba(255,217,0,.25),0 18px 40px rgba(176,125,26,.16)}
+  .hero-kicker{font-size:11.5px;letter-spacing:1px;color:#6a6538;font-weight:700;margin-bottom:5px}
+  .hero h1{margin:0 0 6px;font-size:23px;line-height:1.45;font-weight:800;letter-spacing:-.3px;max-width:760px}
+  .hero p{margin:0;font-size:13.5px;color:#5d5a3a;max-width:760px}
+  .hero .meta{font-size:12px;color:#6a6538;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+  .hero .meta b{font-weight:700}
+  .hero-actions{display:flex;flex-direction:column;gap:8px;flex:none}
+  .hero-actions .mainbtn{border:none;border-radius:13px;background:var(--ink);color:#fff;
+    font-size:14px;font-weight:700;padding:13px 22px;cursor:pointer;white-space:nowrap}
+  .hero-actions .mainbtn:hover{opacity:.9;transform:translateY(-1px)}
+  .hero-actions .linkbtn{border:1px solid rgba(36,36,27,.18);background:rgba(255,255,255,.45);
+    border-radius:11px;padding:8px 12px;font-size:12.5px;cursor:pointer;color:#4a4730}
+  .hero-src{font-size:11px;color:#6a6538;text-align:right;margin-top:2px}
+
+  /* ============ 卡片 / 统计 ============ */
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card h2,.card h3{margin:0}
+  .card h2{font-size:16px;letter-spacing:-.2px}
+  .card h3{font-size:14px}
+  .card .sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .stat{padding:16px 18px}
+  .stat .n{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .stat .h{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .stat.yellow{background:linear-gradient(135deg,#fff7c7,#fffdf2)}
+  .stat.red .n{color:var(--red)}
+  .stat.green .n{color:var(--green)}
+  .section{margin-top:22px}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:11px}
+  .section-head h2{font-size:17px;margin:0;letter-spacing:-.2px}
+  .section-head p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;
+    font-size:12.5px;cursor:pointer;color:var(--muted);transition:.15s}
+  .chip:hover{border-color:#cfcfc2}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .tag{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 9px;
+    font-size:11px;font-weight:600;background:#f1f0e7;color:#5d5a3a;white-space:nowrap}
+  .tag.green{background:#e8f3ec;color:var(--green)}
+  .tag.red{background:#fbe9e5;color:var(--red)}
+  .tag.amber{background:#fbf1da;color:var(--amber)}
+  .tag.violet{background:#eeecfa;color:var(--violet)}
+  .tag.dark{background:var(--ink);color:#fff}
+  .muted{color:var(--muted)}
+  .small{font-size:12px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block}
+  .empty{border:1px dashed var(--line);border-radius:16px;padding:26px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ============ 列表 ============ */
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{border:1px solid var(--line);border-radius:15px;padding:13px 15px;background:#fff}
+  .item:hover{border-color:#d8d8cc}
+  .item-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .item-tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .item-text{font-size:13.5px;color:#33332b;margin-top:7px;line-height:1.75}
+  .item-text.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .item-reason{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+  .item-reason b{color:var(--red);font-weight:600}
+  .item-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .evid{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10.5px;color:#8a8a7d;
+    background:#f6f5ee;border-radius:6px;padding:1px 5px}
+  .src-line{font-size:11.5px;color:#8a8a7d;margin-top:6px}
+  .kp{font-weight:700;color:var(--ink)}
+  .strike{text-decoration:line-through;color:#8a8a7d}
+
+  /* ============ 洞察 ============ */
+  .insight{border-left:4px solid var(--yellow);border-radius:14px;background:#fff;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:16px 18px}
+  .insight h4{margin:0;font-size:15px;line-height:1.55;letter-spacing:-.1px}
+  .insight .desc{font-size:13px;color:#4c4c42;margin-top:7px;line-height:1.8}
+  .insight .desc.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .insight .actions{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+  .action-line{font-size:12.5px;color:#5d5a3a;background:var(--cream);border-radius:10px;
+    padding:8px 10px;margin-top:8px;line-height:1.65}
+
+  /* ============ 图谱 ============ */
+  .graph-wrap{position:relative;background:linear-gradient(180deg,#fffdf2,#fff);border:1px solid var(--line);
+    border-radius:18px;padding:8px 6px 2px;overflow:hidden}
+  .graph-wrap svg{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:4px 14px 12px;font-size:11.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+
+  /* ============ 教学 Agent ============ */
+  .agent{display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;align-items:start}
+  .conv{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+  .conv h3{font-size:13px;margin:0 0 10px;color:var(--muted);font-weight:600}
+  .conv-item{border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:12.5px;
+    background:#fffdf4;margin-bottom:8px}
+  .conv-item b{display:block;font-size:12.5px}
+  .conv-item span{font-size:11px;color:var(--muted)}
+  .chat{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  .strategy{padding:12px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#fff9d9,#fffdf6)}
+  .strategy-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .strategy-top b{font-size:13.5px}
+  .strategy .desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .lvbar{display:flex;gap:4px;margin-top:8px}
+  .lvbar span{height:6px;flex:1;border-radius:999px;background:#eeeade}
+  .lvbar span.on{background:var(--yellow)}
+  .ctxbar{display:none;margin:10px 16px 0;border:1px solid #f0d98a;background:#fffbe5;border-radius:12px;
+    padding:9px 11px;font-size:12.5px;color:#5d5a3a;justify-content:space-between;gap:8px;align-items:center}
+  .ctxbar.show{display:flex}
+  .ctxbar b{color:var(--ink)}
+  .messages{padding:16px;display:flex;flex-direction:column;gap:11px;min-height:330px;max-height:52vh;overflow:auto}
+  .msg{display:flex;gap:9px;align-items:flex-start;max-width:92%}
+  .msg .who{width:28px;height:28px;flex:none;border-radius:9px;background:var(--yellow);
+    display:grid;place-items:center;font-size:11px;font-weight:800}
+  .msg .bubble{border-radius:14px;padding:10px 13px;font-size:13.5px;line-height:1.8;background:#f7f6ee;border:1px solid var(--line)}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse}
+  .msg.user .who{background:var(--ink);color:#fff}
+  .msg.user .bubble{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .msg .probe{margin-top:8px;border-left:3px solid var(--yellow);padding:7px 10px;border-radius:0 9px 9px 0;
+    background:#fffdf0;font-size:13px}
+  .msg .evchips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 10px}
+  .quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;
+    font-size:11.5px;color:var(--muted);cursor:pointer}
+  .quick button:hover{border-color:var(--yellow);color:var(--ink)}
+  .composer{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line);background:#fff}
+  .composer textarea{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+    font-size:13.5px;resize:none;min-height:46px;max-height:120px;outline:none;line-height:1.6}
+  .composer textarea:focus{border-color:var(--yellow)}
+  .composer .send{border:none;border-radius:12px;background:var(--ink);color:#fff;font-weight:700;
+    padding:0 20px;font-size:13.5px;cursor:pointer}
+  .agent-side{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+  .mini-weak{border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:12.5px;background:#fff}
+  .mini-weak b{display:block;font-size:13px}
+  .mini-weak span{color:var(--muted);font-size:11.5px}
+
+  /* ============ 待办 ============ */
+  .todo{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;
+    display:flex;gap:11px;align-items:flex-start}
+  .todo .box{width:20px;height:20px;border:2px solid #c9c9ba;border-radius:6px;flex:none;
+    margin-top:2px;cursor:pointer;display:grid;place-items:center;font-size:12px;color:#fff}
+  .todo.done .box{background:var(--green);border-color:var(--green)}
+  .todo .body{flex:1;min-width:0}
+  .todo .body .t{font-size:13.5px;line-height:1.7}
+  .todo.done .body .t{text-decoration:line-through;color:#8a8a7d}
+  .todo .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;align-items:center}
+  .addbar{display:flex;gap:8px;margin:12px 0 14px;flex-wrap:wrap}
+  .addbar input{flex:1;min-width:200px;border:1px solid var(--line);border-radius:12px;
+    padding:10px 13px;font-size:13.5px;outline:none}
+  .addbar input:focus{border-color:var(--yellow)}
+  .addbar select{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;background:#fff}
+
+  /* ============ 事实 ============ */
+  .fact{border:1px solid var(--line);border-radius:15px;padding:14px 16px;background:#fff}
+  .fact .txt{font-size:13.5px;line-height:1.8}
+  .fact .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;align-items:center}
+
+  /* ============ 抽屉 / Toast ============ */
+  .drawer{position:fixed;inset:0;z-index:50;display:none}
+  .drawer.on{display:block}
+  .drawer-mask{position:absolute;inset:0;background:rgba(36,36,27,.35)}
+  .drawer-panel{position:absolute;right:0;top:0;bottom:0;width:min(560px,94vw);background:#fff;
+    box-shadow:-20px 0 50px rgba(0,0,0,.16);padding:22px 22px 40px;overflow:auto;animation:slide .2s ease}
+  @keyframes slide{from{transform:translateX(30px);opacity:.4}to{transform:none;opacity:1}}
+  .drawer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+    border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+  .drawer-head h3{margin:0;font-size:18px;letter-spacing:-.2px}
+  .drawer-head p{margin:3px 0 0;color:var(--muted);font-size:12.5px}
+  .drawer .close{border:none;background:#f3f2ea;border-radius:9px;width:32px;height:32px;font-size:17px;cursor:pointer}
+  .ev-block{border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px}
+  .ev-block .top{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+  .ev-block .txt{font-size:13px;line-height:1.75;margin-top:6px}
+  .ev-block .reasons{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .ev-block.rej{border-color:#f0cfc8;background:#fff9f7}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;border-radius:13px;padding:11px 18px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.2s;z-index:80;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast a{color:var(--yellow);font-weight:700;cursor:pointer}
+
+  /* ============ 答辩模式 ============ */
+  body.jury .debug-only{display:none!important}
+  body.jury .item-text.clamp{-webkit-line-clamp:4}
+  body.jury .hero h1{font-size:24px}
+  .jury-note{display:none;background:#fff8cc;border:1px solid #efd97e;border-radius:11px;
+    padding:7px 11px;font-size:11.5px;color:#6a6538;margin-bottom:12px}
+  body.jury .jury-note{display:block}
+
+  /* ============ 响应式 ============ */
+  @media(max-width:1050px){
+    .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .agent{grid-template-columns:1fr}
+    .conv{display:none}
+  }
+  @media(max-width:760px){
+    .app{display:block}
+    .sidebar{position:static;width:auto;height:auto;border-right:none;border-bottom:1px solid var(--line);
+      padding:12px 14px}
+    .brand{padding-bottom:10px}
+    .nav{flex-direction:row;overflow:auto;gap:4px}
+    .nav a{white-space:nowrap;padding:7px 10px}
+    .navlabel,.spacer,.side-card,.side-user{display:none}
+    .main{padding:16px 14px 60px}
+    .g4,.g3,.g2{grid-template-columns:1fr}
+    .hero{flex-direction:column;align-items:flex-start}
+    .hero-actions{flex-direction:row;flex-wrap:wrap}
+    .topbar{align-items:flex-start;flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div><b>MetaMind</b><span>YOUR PERSONAL MEMORY</span></div>
+    </div>
+    <div class="navlabel">我的工作空间</div>
+    <nav class="nav" id="nav">
+      <a data-page="home" class="on"><span class="ic">⌂</span>首页</a>
+      <a data-page="memory"><span class="ic">▤</span>记忆</a>
+      <a data-page="grow"><span class="ic">✦</span>成长</a>
+      <a data-page="todos"><span class="ic">☑</span>待办</a>
+      <a data-page="facts"><span class="ic">◈</span>我的事实</a>
+      <a data-page="agent"><span class="ic">◎</span>教学 Agent</a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="side-card" id="sideStatus">
+      <b>冷启动已就绪</b><br>正在加载真实课堂语料…
+    </div>
+    <div class="side-user">
+      <div class="avatar">你</div>
+      <div><b>朋友</b><small>独立个人工作空间</small></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb"><span id="crumbRoot">PERSONAL INTELLIGENCE</span> / <b id="crumbPage">首页</b></div>
+      <div class="top-actions">
+        <button class="btn" id="juryToggle">答辩演示模式</button>
+        <button class="btn primary" id="newRecord">+ 新建记录</button>
+      </div>
+    </header>
+
+    <div class="jury-note" id="juryNote">答辩演示模式：已隐藏内部缩写与调试字段，突出今日记忆简报。再次点击右上角可退出。</div>
+
+    <!-- ================= 首页 ================= -->
+    <section class="page on" id="page-home">
+      <div class="hero" id="hero">
+        <div>
+          <div class="hero-kicker">今日记忆简报 · <span id="digestDate">—</span></div>
+          <h1 id="heroTitle">正在读取你的学习计划…</h1>
+          <p id="heroReason">串口检测中…</p>
+          <div class="meta">
+            <span>今日证据 <b id="heroEvidence">—</b></span>
+            <span>通过门禁 <b id="heroPass">—</b></span>
+            <span>被拦截 <b id="heroRejected">—</b></span>
+            <span id="heroStrategy">策略：—</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="mainbtn" id="start8">▶ 开始 8 分钟</button>
+          <button class="linkbtn" id="quickRecord">🎙 录一段</button>
+          <button class="linkbtn" id="quickAsk">直接问</button>
+          <div class="hero-src" id="heroSrc">来自 /api/digest/today</div>
+        </div>
+      </div>
+
+      <div class="grid g4 section" id="homeStats">
+        <div class="stat yellow"><div class="n" id="statEvidence">—</div><div class="l">今日课堂证据</div><div class="h">语音 + 板书关键词</div></div>
+        <div class="stat green"><div class="n" id="statPass">—</div><div class="l">通过 Critic 门禁</div><div class="h">能进知识图谱与记忆画像</div></div>
+        <div class="stat red"><div class="n" id="statRejected">—</div><div class="l">被拦截 / 只留日志</div><div class="h">语气词、低置信度、生活闲聊</div></div>
+        <div class="stat"><div class="n" id="statTodos">—</div><div class="l">未完成待办</div><div class="h">含 Agent 自动生成的复习任务</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div><h2>今天最该处理的三件事</h2><p>来自课堂证据与 DPM 薄弱点，不是随机推荐</p></div>
+          <button class="btn sm" id="homeDecayBtn">按遗忘曲线排序</button>
+        </div>
+        <div class="grid g3" id="weakCards"><div class="empty">正在加载薄弱点…</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div><h2>知识图谱 · 冷启动已加载</h2><p>点任意节点，右侧抽屉给出原始证据、时间戳和门禁裁决</p></div>
+          <div class="chips" id="homeCourseChips"></div>
+        </div>
+        <div class="graph-wrap" id="graphWrap"><svg id="graphSvg" viewBox="0 0 680 300"></svg></div>
+        <div class="legend">
+          <span><i style="background:#ffd900"></i>有证据支撑</span>
+          <span><i style="background:#cfcfc2"></i>暂无证据</span>
+          <span><i style="background:#c8503c"></i>冲突 / 待确认</span>
+          <span>节点里的数字 = 已绑定的课堂证据条数</span>
+        </div>
+      </div>
+
+      <div class="grid g2 section">
+        <div class="card">
+          <h3>防污染网关 · 什么会进图谱</h3>
+          <p class="sub">生活闲聊只进轻量记忆流，学习信号才过 Critic 门禁</p>
+          <div style="margin-top:12px" id="gatewayBox"></div>
+        </div>
+        <div class="card">
+          <h3>成长洞察 · 最近一条</h3>
+          <p class="sub">点击「让教学 Agent 帮我攻克」，洞察会作为上下文带进聊天</p>
+          <div style="margin-top:12px" id="homeInsight"><div class="empty">正在加载洞察…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 记忆 ================= -->
+    <section class="page" id="page-memory">
+      <div class="section-head">
+        <div><h2>记忆 · 原始证据流</h2><p>每条都带时间戳和证据编号；通过门禁的进图谱，被拦截的只留日志</p></div>
+        <div class="chips" id="memCourseChips"></div>
+      </div>
+      <div class="grid g4" id="memStats">
+        <div class="stat green"><div class="n" id="memPass">—</div><div class="l">通过门禁</div></div>
+        <div class="stat red"><div class="n" id="memRej">—</div><div class="l">被 classroom_rejected 拦截</div></div>
+        <div class="stat"><div class="n" id="memLife">—</div><div class="l">生活碎片 · 只进轻量记忆流</div></div>
+        <div class="stat"><div class="n" id="memReview">—</div><div class="l">Critic / Reviewer 裁决</div></div>
+      </div>
+      <div class="section">
+        <div class="section-head">
+          <div><h2>证据流</h2><p id="memHint">按时间倒序</p></div>
+          <button class="btn sm" id="memDecayBtn">切换：时间衰减复习视图</button>
+        </div>
+        <div id="decayBox" style="display:none"></div>
+        <div class="list" id="memList"><div class="empty">正在加载记忆流…</div></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><div><h2>Critic / Reviewer 裁决</h2><p>哪条结论被证据撑住，哪条证据不足</p></div></div>
+        <div class="list" id="reviewList"></div>
+      </div>
+    </section>
+
+    <!-- ================= 成长 ================= -->
+    <section class="page" id="page-grow">
+      <div class="section-head">
+        <div><h2>成长 · 洞察与 AI 分析</h2><p>洞察不是聊天摘要，每条都能追到相关课堂样本</p></div>
+        <button class="btn sm" id="growDecayBtn">按遗忘曲线看薄弱点</button>
+      </div>
+      <div class="card section" style="border-left:4px solid var(--violet)">
+        <div class="section-head" style="margin-bottom:8px"><div><h3>AI 分析报告 · 当前薄弱点</h3><p>来自课堂证据 + 历史错题，不是模型猜的</p></div></div>
+        <div id="growWeak" class="grid g3"></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><div><h2>成长洞察</h2><p>点「让教学 Agent 帮我攻克」，自动把这条洞察作为 Context 带进聊天</p></div></div>
+        <div class="list" id="insightList"></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><div><h2>每日回顾</h2><p>每日简报的上游数据</p></div></div>
+        <div class="list" id="dailyList"></div>
+      </div>
+    </section>
+
+    <!-- ================= 待办 ================= -->
+    <section class="page" id="page-todos">
+      <div class="section-head">
+        <div><h2>待办 · 与 DPM 薄弱点绑定</h2><p>教学 Agent 识别到你没掌握时，会自动在这里写入复习任务；勾选完成会回写薄弱点画像</p></div>
+        <div class="chips" id="todoFilter">
+          <button class="chip on" data-filter="open">待复习</button>
+          <button class="chip" data-filter="done">已完成</button>
+          <button class="chip" data-filter="all">全部</button>
+        </div>
+      </div>
+      <div class="addbar">
+        <input id="todoInput" placeholder="加一条复习任务，例如：用反例解释多尔四R的「严密性」">
+        <select id="todoCourse"></select>
+        <button class="btn primary" id="todoAdd">添加待办</button>
+      </div>
+      <div class="grid g3" style="margin-bottom:14px">
+        <div class="stat yellow"><div class="n" id="todoOpen">—</div><div class="l">待复习</div></div>
+        <div class="stat green"><div class="n" id="todoDone">—</div><div class="l">已完成 · 已回写 DPM</div></div>
+        <div class="stat"><div class="n" id="todoAgent">—</div><div class="l">教学 Agent 自动创建</div></div>
+      </div>
+      <div class="list" id="todoList"><div class="empty">正在加载待办…</div></div>
+    </section>
+
+    <!-- ================= 我的事实 ================= -->
+    <section class="page" id="page-facts">
+      <div class="section-head">
+        <div><h2>我的事实</h2><p>来自 project/sample-* 的 facts.json 与课堂摘要要点，带来源样本编号</p></div>
+        <div class="tag dark" id="factCount">— 条</div>
+      </div>
+      <div class="grid g2" id="factList"><div class="empty">正在加载事实…</div></div>
+    </section>
+
+    <!-- ================= 教学 Agent ================= -->
+    <section class="page" id="page-agent">
+      <div class="agent">
+        <aside class="conv">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <h3 style="margin:0">对话</h3>
+            <button class="btn sm" id="newChat">＋ 新对话</button>
+          </div>
+          <div class="conv-item"><b>当前对话</b><span id="convTime">刚刚</span></div>
+          <div class="conv-item" style="background:#fff"><b>可带进来的上下文</b><span>成长洞察、今日简报、薄弱点</span></div>
+          <div class="side-card" style="margin-top:12px">
+            <b>它不会做什么</b><br>不直接给最终答案；不把生活闲聊写进知识图谱；不在证据不足时硬说你“已掌握”。
+          </div>
+          <div class="agent-side" id="agentWeakList"></div>
+        </aside>
+
+        <div class="chat">
+          <div class="strategy" id="strategyBar">
+            <div class="strategy-top">
+              <div><b>当前策略：<span id="strategyLabel">苏格拉底式启发引导</span></b>
+                <span class="tag amber" id="strategyLevel" style="margin-left:6px">Lv.2</span></div>
+              <span class="small muted" id="strategyTurns">第 0 轮</span>
+            </div>
+            <div class="desc" id="strategyDesc">不直接给答案，用问题把思路逼出来</div>
+            <div class="lvbar" id="lvbar"><span class="on"></span><span class="on"></span><span></span><span></span></div>
+          </div>
+          <div class="ctxbar" id="ctxbar">
+            <div>正在攻克：<b id="ctxTitle">—</b><div class="small muted" id="ctxDesc"></div></div>
+            <button class="btn sm" id="ctxClear">清除上下文</button>
+          </div>
+          <div class="messages" id="messages"></div>
+          <div class="quick" id="quickPrompts"></div>
+          <div class="composer">
+            <textarea id="chatInput" rows="1" placeholder="问点什么…（Enter 发送，Shift+Enter 换行）"></textarea>
+            <button class="send" id="sendBtn">发送</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- 证据抽屉 -->
+<div class="drawer" id="drawer">
+  <div class="drawer-mask" data-close="1"></div>
+  <aside class="drawer-panel">
+    <div class="drawer-head">
+      <div><h3 id="drawerTitle">证据溯源</h3><p id="drawerSub">原始证据、时间戳与门禁裁决</p></div>
+      <button class="close" data-close="1">×</button>
+    </div>
+    <div id="drawerBody"></div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   MetaMind 官网前端：五页打通
+   - 所有数据来自本机 Flask（/api/*），不用假数组
+   - 教学 Agent 的策略条、上下文、自动待办、证据引用全部走真实接口
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = ts => { if(!ts) return '—'; const d = new Date(ts*1000); const p=n=>String(n).padStart(2,'0'); return `${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const safe = (fn, fallback='—') => { try { return fn(); } catch(e){ console.warn(e); return fallback; } };
+
+const S = {
+  page: 'home',
+  course: '',
+  memCourse: '',
+  courses: [],
+  digest: null,
+  memory: null,
+  insights: [],
+  daily: [],
+  todos: [],
+  todoFilter: 'open',
+  facts: [],
+  decay: null,
+  graph: null,
+  jury: localStorage.getItem('mm_jury') === '1',
+  decayMode: false,
+  sessionId: localStorage.getItem('mm_session') || ('s-' + Date.now().toString(36)),
+  context: JSON.parse(sessionStorage.getItem('mm_context') || 'null'),
+  messages: [],
+  strategy: {level:2,label:'苏格拉底式启发引导',desc:'不直接给答案，用问题把思路逼出来',turns:0},
+};
+
+/* ---------------- 基础请求 ---------------- */
+async function api(path, opts={}) {
+  const r = await fetch(path, {
+    headers: {'Content-Type':'application/json', ...(opts.headers||{})},
+    ...opts,
+  });
+  if (!r.ok) throw new Error(`${path} → HTTP ${r.status}`);
+  return r.json();
+}
+function toast(msg, action) {
+  const el = $('#toast');
+  el.innerHTML = esc(msg) + (action ? ` <a id="toastAct">${esc(action.label)}</a>` : '');
+  el.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('on'), 4200);
+  if (action) $('#toastAct').onclick = action.fn;
+  return el;
+}
+function courseName(id) {
+  const c = S.courses.find(x => x.id === id);
+  return c ? c.name : (id || '未分类');
+}
+function sourceLabel(src) {
+  src = src || '';
+  if (src.startsWith('corpus')) return '语料包';
+  if (src === 'agent') return '教学 Agent 自动创建';
+  if (src === 'manual') return '手动添加';
+  return src;
+}
+function statusTag(status) {
+  if (status === 'PASS') return '<span class="tag green">通过 Critic 门禁</span>';
+  if (status === 'WEAK') return '<span class="tag amber">证据不足 · WEAK</span>';
+  if (status === 'STREAM_ONLY') return '<span class="tag violet">轻量记忆流</span>';
+  if (status === 'LOW_CONFIDENCE') return '<span class="tag red">低置信度 · 已拦截</span>';
+  return `<span class="tag red">${esc(status || '未通过')} · 已拦截</span>`;
+}
+function humanTech(text) {
+  if (!S.jury) return text;
+  return String(text || '')
+    .replace(/\bSKG\b/g, '核心知识图谱')
+    .replace(/\bDPM\b/g, '个人记忆薄弱点')
+    .replace(/Critic 门禁/g, '证据审查')
+    .replace(/\bCritic\b/g, '证据审查')
+    .replace(/\bev_id\b/g, '证据编号')
+    .replace(/\bRSI\b/g, '自进化');
+}
+function evTag(ev) {
+  if (!ev) return '';
+  return S.jury ? '' : `<span class="evid">${esc(ev)}</span>`;
+}
+
+/* ---------------- 路由 ---------------- */
+const PAGE_TITLES = {home:'首页', memory:'记忆', grow:'成长', todos:'待办', facts:'我的事实', agent:'教学 Agent'};
+function navigate(page, ctx) {
+  if (!PAGE_TITLES[page]) page = 'home';
+  S.page = page;
+  if (ctx !== undefined) setContext(ctx);
+  $$('.nav a').forEach(a => a.classList.toggle('on', a.dataset.page === page));
+  $$('.page').forEach(p => p.classList.toggle('on', p.id === 'page-' + page));
+  $('#crumbPage').textContent = PAGE_TITLES[page];
+  history.replaceState(null, '', '#/' + page);
+  window.scrollTo({top:0, behavior:'smooth'});
+  if (page === 'memory') loadMemory();
+  if (page === 'grow') loadGrow();
+  if (page === 'todos') loadTodos();
+  if (page === 'facts') loadFacts();
+  if (page === 'agent') loadAgent();
+  if (page === 'home') loadHome();
+}
+$$('.nav a').forEach(a => a.onclick = () => navigate(a.dataset.page));
+
+/* ---------------- 上下文 ---------------- */
+function setContext(ctx) {
+  S.context = ctx || null;
+  if (ctx) sessionStorage.setItem('mm_context', JSON.stringify(ctx));
+  else sessionStorage.removeItem('mm_context');
+  renderContext();
+}
+function renderContext() {
+  const bar = $('#ctxbar');
+  if (!S.context) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  const c = S.context;
+  $('#ctxTitle').textContent = c.title || c.kp || '一条学习上下文';
+  const bits = [];
+  if (c.kp) bits.push('知识点：' + c.kp);
+  if (c.course_id) bits.push(courseName(c.course_id));
+  if (c.description) bits.push(String(c.description).slice(0, 60));
+  $('#ctxDesc').textContent = bits.join(' · ') || '来自今日简报';
+}
+$('#ctxClear').onclick = () => { setContext(null); toast('已清除上下文，聊天会回到普通问答'); };
+
+/* ---------------- 答辩模式 ---------------- */
+function applyJury() {
+  document.body.classList.toggle('jury', S.jury);
+  $('#juryToggle').textContent = S.jury ? '退出答辩模式' : '答辩演示模式';
+  localStorage.setItem('mm_jury', S.jury ? '1' : '0');
+}
+$('#juryToggle').onclick = () => { S.jury = !S.jury; applyJury(); renderAllStatic(); toast(S.jury ? '答辩演示模式已开启：内部缩写已隐藏，今日简报已高亮' : '已退出答辩演示模式'); };
+
+/* ---------------- 首页 ---------------- */
+async function loadHome() {
+  try {
+    const d = await api('/api/digest/today');
+    S.digest = d;
+    $('#digestDate').textContent = d.date || '今天';
+    $('#heroTitle').textContent = humanTech(d.headline || '今天先做一件事');
+    $('#heroReason').textContent = humanTech(d.headline_reason || '来自今日记忆简报');
+    $('#heroEvidence').textContent = d.events ?? 0;
+    $('#heroPass').textContent = Math.max(0, (d.events ?? 0) - (d.rejected ?? 0));
+    $('#heroRejected').textContent = d.rejected ?? 0;
+    $('#heroStrategy').textContent = `策略：${(d.strategy && d.strategy.label) || '苏格拉底式启发引导'}`;
+    $('#statEvidence').textContent = d.events ?? 0;
+    $('#statPass').textContent = Math.max(0, (d.events ?? 0) - (d.rejected ?? 0));
+    $('#statRejected').textContent = d.rejected ?? 0;
+    $('#statTodos').textContent = (d.todos_open || []).length;
+    renderWeakCards(d);
+    renderGateway(d);
+    renderHomeInsight(d);
+    await loadCourses();
+    const cid = S.course || ((d.courses && d.courses[0] && d.courses[0].course_id) || 'edu_curriculum');
+    S.course = cid;
+    renderHomeCourseChips();
+    await loadGraph(cid);
+    updateSideStatus(d);
+  } catch(e) {
+    $('#heroTitle').textContent = '后端还没启动，或接口报错';
+    $('#heroReason').textContent = String(e);
+  }
+}
+function renderWeakCards(d) {
+  const box = $('#weakCards');
+  const items = (d.weak_items && d.weak_items.length) ? d.weak_items : (d.weak ? [d.weak] : []);
+  if (!items.length) { box.innerHTML = '<div class="empty">还没有达到门槛的薄弱点。先上传一段课堂录音。</div>'; return; }
+  box.innerHTML = items.slice(0,3).map((it, i) => `
+    <div class="card" style="padding:15px 16px">
+      <div class="item-tags">
+        <span class="tag dark">${['①','②','③'][i] || '·'}</span>
+        <span class="tag green">${esc(courseName(it.course_id))}</span>
+        ${it.reviewed ? '<span class="tag green">已复习</span>' : '<span class="tag red">未攻克</span>'}
+      </div>
+      <h3 style="margin-top:9px">${esc(it.kp || '待归类')}</h3>
+      <div class="small muted" style="margin-top:4px">${esc(humanTech(it.note || '来自课堂时序证据'))}</div>
+      <div class="item-actions">
+        <button class="btn sm primary" data-agent-weak="${i}">让 Agent 带我攻克</button>
+        <button class="btn sm" data-evidence="${esc(it.course_id)}|${esc(it.kp_id||'')}|${esc(it.kp||'')}">查看证据</button>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-agent-weak]').forEach(btn => btn.onclick = () => {
+    const it = items[+btn.dataset.agentWeak];
+    navigate('agent', {type:'weak', title: it.kp, kp: it.kp, kp_id: it.kp_id,
+      course_id: it.course_id, description: it.note || '来自 DPM 薄弱点'});
+  });
+  box.querySelectorAll('[data-evidence]').forEach(btn => btn.onclick = () => {
+    const [cid, kp_id, kp] = btn.dataset.evidence.split('|');
+    openEvidenceDrawer(cid, kp_id, kp);
+  });
+}
+function renderGateway(d) {
+  const pass = Math.max(0, (d.events || 0) - (d.rejected || 0));
+  const life = (d.gateway && d.gateway.life) || (d.life || []).length;
+  $('#gatewayBox').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="tag green">学习信号 ${pass} 条 → Critic 门禁 → 图谱 / DPM</span>
+      <span class="tag red">噪声 ${d.rejected || 0} 条 → 只留 classroom_rejected</span>
+      <span class="tag violet">生活碎片 ${life} 条 → 轻量记忆流</span>
+    </div>
+    <div class="small muted" style="margin-top:10px;line-height:1.75">
+      防污染网关先做意图路由：命中生活词且没有学习词的句子，不会进知识图谱。
+      这样“食堂闲聊”不会被塞进薄弱点画像；但它仍留在记忆流里，可回看、可删除。
+    </div>`;
+}
+function renderHomeInsight(d) {
+  const list = (d.insights || []);
+  const it = list[0];
+  if (!it) { $('#homeInsight').innerHTML = '<div class="empty">还没有成长洞察。</div>'; return; }
+  $('#homeInsight').innerHTML = `
+    <div class="item-tags"><span class="tag amber">${esc(it.kind === 'daily' ? '每日回顾' : '成长洞察')}</span><span class="tag">${esc(it.date || '')}</span></div>
+    <h3 style="margin-top:8px;font-size:14.5px;line-height:1.6">${esc(humanTech(it.title || ''))}</h3>
+    <div class="small muted" style="margin-top:5px">${esc(String(it.description || '').slice(0, 110))}…</div>
+    <div class="item-actions"><button class="btn sm primary" id="homeInsightBtn">让教学 Agent 帮我攻克</button></div>`;
+  $('#homeInsightBtn').onclick = () => {
+    const ctx = it.context || {type:'insight', title: it.title, description: it.description, id: it.id};
+    navigate('agent', ctx);
+  };
+}
+function updateSideStatus(d) {
+  $('#sideStatus').innerHTML = `<b>冷启动已就绪</b><br>${d.events||0} 条课堂证据 · ${d.rejected||0} 条被拦截<br>${S.courses.length} 门课程已加载`;
+}
+async function loadCourses() {
+  if (S.courses.length) return;
+  const d = await api('/api/teach/courses');
+  S.courses = d.courses || [];
+  const sel = $('#todoCourse');
+  sel.innerHTML = '<option value="">自动识别课程</option>' + S.courses.map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+}
+function renderHomeCourseChips() {
+  const box = $('#homeCourseChips');
+  const list = S.courses.filter(c => c.id.startsWith('edu_') || c.evidence > 0);
+  box.innerHTML = list.map(c => `<button class="chip ${c.id===S.course?'on':''}" data-cid="${esc(c.id)}">${esc(c.name)} · ${c.evidence||0}</button>`).join('');
+  box.querySelectorAll('[data-cid]').forEach(b => b.onclick = () => { S.course = b.dataset.cid; renderHomeCourseChips(); loadGraph(S.course); renderMemoryCourseChips(); });
+}
+async function loadGraph(cid) {
+  try {
+    const g = await api('/api/teach/graph/' + encodeURIComponent(cid));
+    S.graph = g;
+    renderGraph(g);
+  } catch(e) {
+    $('#graphSvg').innerHTML = `<text x="340" y="150" text-anchor="middle" fill="#76766d" font-size="13">图谱加载失败：${esc(String(e))}</text>`;
+  }
+}
+function renderGraph(g) {
+  const svg = $('#graphSvg');
+  const nodes = (g.nodes || []).slice(0, 9);
+  if (!nodes.length) { svg.innerHTML = '<text x="340" y="150" text-anchor="middle" fill="#76766d">暂无节点</text>'; return; }
+  const root = nodes.find(n => n.id === 'root') || nodes[0];
+  const others = nodes.filter(n => n !== root);
+  const pos = {};
+  pos[root.id] = {x:340, y:52};
+  const cols = Math.min(4, Math.max(1, others.length));
+  others.forEach((n, i) => {
+    const row = Math.floor(i / cols), col = i % cols;
+    const per = Math.min(cols, others.length - row * cols);
+    pos[n.id] = {x: 340 + (col - (per-1)/2) * 150, y: 150 + row * 78};
+  });
+  const edgeHtml = (g.edges || []).filter(e => pos[e.from] && pos[e.to]).map(e => {
+    const a = pos[e.from], b = pos[e.to];
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#d9d7c9" stroke-width="1.4" stroke-dasharray="3 4"/>`;
+  }).join('');
+  const nodeHtml = nodes.map(n => {
+    const p = pos[n.id]; if (!p) return '';
+    const seen = n.seen || 0;
+    const evidence = (n.evidence || []).length;
+    const r = 16 + Math.min(14, Math.sqrt(seen + evidence) * 2.2);
+    const conflict = n.status === 'conflict';
+    const fill = conflict ? '#f5d8d1' : (seen ? '#ffd900' : '#efeee5');
+    const stroke = conflict ? '#c8503c' : (seen ? '#d4b400' : '#d9d7c9');
+    return `<g class="gnode" data-nid="${esc(n.id)}" data-kp="${esc(n.label||'')}" style="cursor:pointer">
+      <circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.6"/>
+      <text x="${p.x}" y="${p.y+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#24241b">${esc(String(seen || evidence || 0))}</text>
+      <text x="${p.x}" y="${p.y+r+15}" text-anchor="middle" font-size="11.5" fill="#3d3d33">${esc((n.label||'').slice(0,9))}</text>
+    </g>`;
+  }).join('');
+  svg.innerHTML = edgeHtml + nodeHtml;
+  svg.querySelectorAll('.gnode').forEach(el => el.onclick = () => {
+    openEvidenceDrawer(g.course_id || S.course, el.dataset.nid, el.dataset.kp);
+  });
+}
+
+/* ---------------- 证据抽屉 ---------------- */
+async function openEvidenceDrawer(cid, kp_id, kp) {
+  const drawer = $('#drawer');
+  drawer.classList.add('on');
+  $('#drawerTitle').textContent = kp || '证据溯源';
+  $('#drawerSub').textContent = `${courseName(cid)} · 原始证据 / 门禁裁决 / 时间戳`;
+  $('#drawerBody').innerHTML = '<div class="empty">正在读取原始证据…</div>';
+  try {
+    const d = await api(`/api/evidence/${encodeURIComponent(cid)}/${encodeURIComponent(kp_id||'')}?kp=${encodeURIComponent(kp||'')}`);
+    const evs = d.evidence || [], rej = d.rejected || [], revs = d.reviews || [];
+    $('#drawerSub').textContent = `${courseName(cid)} · 通过 ${d.counts.pass} 条 · 被拦截 ${d.counts.rejected} 条`;
+    let html = '';
+    if (evs.length) {
+      html += `<div class="small muted" style="margin:2px 0 8px">通过 Critic 门禁的原始证据</div>`;
+      html += evs.slice().reverse().map(e => `
+        <div class="ev-block">
+          <div class="top"><span>${statusTag(e.verify_status || 'PASS')}</span><span class="small muted">${esc(e.kind_label || e.kind)} · ${esc(e.t_label || '')} · 置信度 ${e.confidence ?? '—'}</span></div>
+          <div class="txt">${esc(humanTech(e.text || ''))}</div>
+          <div class="reasons">${evTag(e.ev_id)} 来源：${esc(e.source_sample || '课堂采集')}${e.evidence_source && e.evidence_source.date ? ' · ' + esc(e.evidence_source.date) : ''}</div>
+        </div>`).join('');
+    }
+    if (rej.length) {
+      html += `<div class="small muted" style="margin:14px 0 8px">被 classroom_rejected 拦截（不进图谱 / DPM）</div>`;
+      html += rej.map(r => {
+        const ev = r.event || {};
+        return `<div class="ev-block rej">
+          <div class="top"><span class="tag red">${esc(r.status || 'UNVERIFIED')}</span><span class="small muted">${esc(ev.kind || '')} · ${esc(ev.t_label || '')}</span></div>
+          <div class="txt">${esc(ev.text || '')}</div>
+          <div class="reasons"><b>原因：</b>${esc((r.reasons_list || []).join('；') || '未达证据门槛')}</div>
+        </div>`;
+      }).join('');
+    }
+    if (revs.length) {
+      html += `<div class="small muted" style="margin:14px 0 8px">Critic / Reviewer 裁决</div>`;
+      html += revs.map(r => `<div class="ev-block">
+        <div class="top"><span class="tag ${r.verdict === 'PASS' ? 'green' : 'amber'}">${esc(r.verdict)}</span><span class="small muted">${esc(fmt(r.ts))}</span></div>
+        <div class="txt">${esc(r.reason || '')}</div>
+        <div class="reasons">${(r.support || []).slice(0,3).map(x => evTag(x.source_sample ? '' : '')).join(' ')}</div>
+      </div>`).join('');
+    }
+    if (!html) html = '<div class="empty">这个知识点还没有可展示的证据。</div>';
+    $('#drawerBody').innerHTML = html;
+  } catch(e) {
+    $('#drawerBody').innerHTML = `<div class="empty">读取失败：${esc(String(e))}</div>`;
+  }
+}
+$('#drawer').addEventListener('click', e => { if (e.target.dataset.close) $('#drawer').classList.remove('on'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#drawer').classList.remove('on'); });
+
+/* ---------------- 记忆页 ---------------- */
+async function loadMemory() {
+  try {
+    const cid = S.memCourse && S.memCourse !== 'all' ? S.memCourse : '';
+    const d = await api('/api/memory/stream?limit=260' + (cid ? '&course_id=' + encodeURIComponent(cid) : ''));
+    S.memory = d;
+    $('#memPass').textContent = d.counts.pass || 0;
+    $('#memRej').textContent = d.counts.rejected || 0;
+    $('#memLife').textContent = d.counts.life || 0;
+    $('#memReview').textContent = (d.reviews || []).length;
+    renderMemoryCourseChips();
+    renderMemoryList(d);
+    renderReviews(d.reviews || []);
+    if (S.decayMode) loadDecay('decayBox');
+  } catch(e) { $('#memList').innerHTML = `<div class="empty">记忆流加载失败：${esc(String(e))}</div>`; }
+}
+function renderMemoryCourseChips() {
+  const box = $('#memCourseChips');
+  const opts = [{id:'all', name:'全部课程'}].concat(S.courses);
+  box.innerHTML = opts.map(c => `<button class="chip ${(c.id===S.memCourse||(!S.memCourse&&c.id==='all'))?'on':''}" data-mcid="${esc(c.id)}">${esc(c.name)}</button>`).join('');
+  box.querySelectorAll('[data-mcid]').forEach(b => b.onclick = () => { S.memCourse = b.dataset.mcid === 'all' ? '' : b.dataset.mcid; loadMemory(); });
+}
+function renderMemoryList(d) {
+  const items = d.items || [];
+  if (!items.length) { $('#memList').innerHTML = '<div class="empty">还没有记忆证据。</div>'; return; }
+  $('#memList').innerHTML = items.map((x, i) => {
+    const status = x.kind === 'evidence' ? (x.status || 'PASS') : (x.kind === 'life' ? 'STREAM_ONLY' : (x.status || 'UNVERIFIED'));
+    const cls = x.kind === 'rejected' ? 'item" style="border-color:#f0cfc8;background:#fff9f7' : 'item';
+    return `<div class="${cls}">
+      <div class="item-top">
+        <div class="item-tags">
+          ${statusTag(status)}
+          <span class="tag">${esc(x.kind_label || (x.kind === 'life' ? '轻量记忆流' : '证据'))}</span>
+          ${x.kp ? `<span class="tag dark">${esc(x.kp)}</span>` : ''}
+          ${x.source_type === 'human_input' ? '<span class="tag violet">人工补录</span>' : ''}
+        </div>
+        <span class="small muted">${esc(x.date_label || '')} · ${esc(x.time_label || '')}</span>
+      </div>
+      <div class="item-text ${i>5?'clamp':''}">${esc(humanTech(x.text || ''))}</div>
+      <div class="src-line">
+        ${evTag(x.ev_id)}
+        ${x.source_sample ? '来源：' + esc(x.source_sample) : ''}
+        ${x.confidence != null ? ' · 置信度 ' + x.confidence : ''}
+      </div>
+      ${(x.reasons && x.reasons.length) ? `<div class="item-reason"><b>门禁说明：</b>${esc(x.reasons.join('；'))}</div>` : ''}
+      <div class="item-actions">
+        <button class="btn sm" data-mem-ev="${esc(x.course_id||'')}|${esc(x.kp_id||'')}|${esc(x.kp||'')}">查看关联证据</button>
+        ${x.kp ? `<button class="btn sm primary" data-mem-agent="${esc(x.course_id||'')}|${esc(x.kp_id||'')}|${esc(x.kp||'')}">让 Agent 带我攻克</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  $('#memList').querySelectorAll('[data-mem-ev]').forEach(b => b.onclick = () => {
+    const [cid,kp_id,kp] = b.dataset.memEv.split('|'); if (cid) openEvidenceDrawer(cid,kp_id,kp);
+  });
+  $('#memList').querySelectorAll('[data-mem-agent]').forEach(b => b.onclick = () => {
+    const [cid,kp_id,kp] = b.dataset.memAgent.split('|');
+    navigate('agent', {type:'weak', title:kp, kp, kp_id, course_id:cid, description:'来自记忆流里的一条卡点证据'});
+  });
+}
+function renderReviews(reviews) {
+  const box = $('#reviewList');
+  if (!reviews.length) { box.innerHTML = '<div class="empty">还没有 Critic / Reviewer 裁决。</div>'; return; }
+  box.innerHTML = reviews.slice(0,12).map(r => `
+    <div class="item">
+      <div class="item-top">
+        <div class="item-tags"><span class="tag ${r.verdict==='PASS'?'green':'amber'}">${esc(r.verdict)}</span><span class="tag dark">${esc(r.kp || '')}</span></div>
+        <span class="small muted">${esc(r.date_label || '')}</span>
+      </div>
+      <div class="item-reason">${esc(r.reason || '')}</div>
+    </div>`).join('');
+}
+$('#memDecayBtn').onclick = () => {
+  S.decayMode = !S.decayMode;
+  $('#decayBox').style.display = S.decayMode ? 'block' : 'none';
+  $('#memHint').textContent = S.decayMode ? '按遗忘曲线排序：越久没碰、错得越多越靠前' : '按时间倒序';
+  $('#memDecayBtn').textContent = S.decayMode ? '切换：按时间' : '切换：时间衰减复习视图';
+  if (S.decayMode) loadDecay('decayBox');
+};
+
+/* ---------------- 时间衰减 ---------------- */
+async function loadDecay(target) {
+  const base = target === 'decayBox' ? S.memCourse : S.course;
+  const cid = base && base !== 'all' ? base : '';
+  const d = await api('/api/review/decay' + (cid ? '?course_id=' + encodeURIComponent(cid) : ''));
+  S.decay = d;
+  const html = `<div class="card" style="margin-bottom:12px">
+    <div class="item-tags"><span class="tag violet">时间衰减复习</span><span class="tag">${esc(d.rule||'')}</span></div>
+    <div class="list" style="margin-top:10px">${(d.items||[]).slice(0,8).map(it => `
+      <div class="item">
+        <div class="item-top"><div class="item-tags"><span class="tag ${it.reviewed?'green':'red'}">${it.reviewed?'已复习':'快忘了'}</span><span class="tag dark">${esc(it.kp||'')}</span><span class="tag">${esc(courseName(it.course_id))}</span></div><span class="small muted">${it.days_since} 天没碰 · 衰减 ${Math.round(it.decay*100)}%</span></div>
+        <div class="item-reason">${esc(it.note||'')}</div>
+        <div class="item-actions"><button class="btn sm primary" data-decay-agent="${esc(it.course_id)}|${esc(it.kp_id||'')}|${esc(it.kp||'')}">让 Agent 带我复习</button></div>
+      </div>`).join('') || '<div class="empty">还没有可排序的薄弱点。</div>'}</div>
+  </div>`;
+  $('#'+target).innerHTML = html;
+  $('#'+target).querySelectorAll('[data-decay-agent]').forEach(b => b.onclick = () => {
+    const [cid2,kp_id,kp] = b.dataset.decayAgent.split('|');
+    navigate('agent', {type:'weak', title:kp, kp, kp_id, course_id:cid2, description:'来自时间衰减复习视图'});
+  });
+}
+$('#homeDecayBtn').onclick = () => { S.decayMode = true; navigate('memory'); setTimeout(()=>{ $('#decayBox').style.display='block'; loadDecay('decayBox'); }, 300); };
+$('#growDecayBtn').onclick = () => loadDecay('growWeak');
+
+/* ---------------- 成长页 ---------------- */
+async function loadGrow() {
+  try {
+    const d = await api('/api/insights');
+    S.insights = (d.insights || []).filter(x => x.kind !== 'daily');
+    S.daily = (d.insights || []).filter(x => x.kind === 'daily');
+    renderGrowWeak();
+    renderInsights();
+    renderDaily();
+  } catch(e) { $('#insightList').innerHTML = `<div class="empty">洞察加载失败：${esc(String(e))}</div>`; }
+}
+function renderGrowWeak() {
+  const box = $('#growWeak');
+  const d = S.digest;
+  if (!d) { api('/api/digest/today').then(x => { S.digest = x; renderGrowWeak(); }); return; }
+  const items = d.weak_items || [];
+  if (!items.length) { box.innerHTML = '<div class="empty">还没有达到门槛的薄弱点。</div>'; return; }
+  box.innerHTML = items.map(it => `
+    <div class="item">
+      <div class="item-tags"><span class="tag red">连续卡壳</span><span class="tag dark">${esc(it.kp||'')}</span></div>
+      <div class="item-reason">${esc(humanTech(it.note||''))}</div>
+      <div class="item-actions"><button class="btn sm primary" data-grow-agent="${esc(it.course_id)}|${esc(it.kp_id||'')}|${esc(it.kp||'')}">让教学 Agent 帮我攻克</button></div>
+    </div>`).join('');
+  box.querySelectorAll('[data-grow-agent]').forEach(b => b.onclick = () => {
+    const [cid,kp_id,kp] = b.dataset.growAgent.split('|');
+    navigate('agent', {type:'weak', title:kp, kp, kp_id, course_id:cid, description:'来自 AI 分析报告里的薄弱点'});
+  });
+}
+function renderInsights() {
+  const box = $('#insightList');
+  if (!S.insights.length) { box.innerHTML = '<div class="empty">还没有成长洞察。</div>'; return; }
+  box.innerHTML = S.insights.map(it => `
+    <div class="insight">
+      <div class="item-tags"><span class="tag amber">成长洞察</span><span class="tag">${esc(it.date||'')}</span>${(it.related_samples||[]).slice(0,3).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>
+      <h4 style="margin-top:8px">${esc(humanTech(it.title||''))}</h4>
+      <div class="desc clamp">${esc(it.description||'')}</div>
+      ${(it.suggested_actions||[]).length ? `<div class="action-line">建议行动：${esc(it.suggested_actions[0])}</div>` : ''}
+      <div class="actions">
+        <button class="btn sm primary" data-insight-agent="${it.id}">让教学 Agent 帮我攻克</button>
+        <button class="btn sm" data-insight-open="${it.id}">展开全文</button>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-insight-agent]').forEach(b => b.onclick = () => {
+    const it = S.insights.find(x => String(x.id) === b.dataset.insightAgent);
+    navigate('agent', it.context || {type:'insight', title: it.title, description: it.description, id: it.id});
+  });
+  box.querySelectorAll('[data-insight-open]').forEach(b => b.onclick = () => {
+    const it = S.insights.find(x => String(x.id) === b.dataset.insightOpen);
+    openInsight(it);
+  });
+}
+function openInsight(it) {
+  $('#drawer').classList.add('on');
+  $('#drawerTitle').textContent = it.title || '成长洞察';
+  $('#drawerSub').textContent = `${it.date || ''} · ${(it.related_samples||[]).join('、') || '成长语料'}`;
+  $('#drawerBody').innerHTML = `<div class="item-text" style="white-space:pre-wrap">${esc(it.description||'')}</div>
+    ${(it.suggested_actions||[]).length ? `<div class="action-line">建议行动：${esc(it.suggested_actions.join(' / '))}</div>` : ''}
+    <div class="item-actions" style="margin-top:14px"><button class="btn primary" id="drawerAgentBtn">让教学 Agent 帮我攻克</button></div>`;
+  $('#drawerAgentBtn').onclick = () => { $('#drawer').classList.remove('on'); navigate('agent', it.context || {type:'insight', title:it.title, description:it.description, id:it.id}); };
+}
+function renderDaily() {
+  const box = $('#dailyList');
+  if (!S.daily.length) { box.innerHTML = '<div class="empty">还没有每日回顾。</div>'; return; }
+  box.innerHTML = S.daily.map(it => `
+    <div class="item">
+      <div class="item-top"><div class="item-tags"><span class="tag dark">每日回顾</span><span class="tag">${esc(it.date||'')}</span></div><span class="small muted">${esc((it.related_samples||[]).join(' · '))}</span></div>
+      <div class="item-text clamp">${esc(it.title||'')}　${esc(String(it.description||'').slice(0,120))}</div>
+      <div class="item-actions"><button class="btn sm" data-daily-agent="${it.id}">把今天落成行动</button></div>
+    </div>`).join('');
+  box.querySelectorAll('[data-daily-agent]').forEach(b => b.onclick = () => {
+    const it = S.daily.find(x => String(x.id) === b.dataset.dailyAgent);
+    navigate('agent', it.context || {type:'insight', title:it.title, description:it.description, id:it.id});
+  });
+}
+
+/* ---------------- 待办页 ---------------- */
+async function loadTodos() {
+  try {
+    const d = await api('/api/todos?status=all&limit=300');
+    S.todos = d.todos || [];
+    renderTodos();
+  } catch(e) { $('#todoList').innerHTML = `<div class="empty">待办加载失败：${esc(String(e))}</div>`; }
+}
+function renderTodos() {
+  const all = S.todos;
+  const open = all.filter(t => !t.done), done = all.filter(t => t.done);
+  $('#todoOpen').textContent = open.length;
+  $('#todoDone').textContent = done.length;
+  $('#todoAgent').textContent = all.filter(t => t.source === 'agent').length;
+  const list = S.todoFilter === 'open' ? open : S.todoFilter === 'done' ? done : all;
+  const box = $('#todoList');
+  if (!list.length) { box.innerHTML = `<div class="empty">${S.todoFilter==='done'?'还没有完成的待办。':'待办清空了，去首页看看今日简报。'}</div>`; return; }
+  box.innerHTML = list.map(t => `
+    <div class="todo ${t.done?'done':''}" data-tid="${t.id}">
+      <div class="box" data-toggle="${t.id}" title="${t.done?'重新打开':'标记完成'}">${t.done?'✓':''}</div>
+      <div class="body">
+        <div class="t">${esc(humanTech(t.text||''))}</div>
+        <div class="meta">
+          <span class="tag ${t.source==='agent'?'violet':'green'}">${esc(sourceLabel(t.source))}</span>
+          ${t.kp ? `<span class="tag dark">${esc(t.kp)}</span>` : ''}
+          ${t.course_id ? `<span class="tag">${esc(courseName(t.course_id))}</span>` : ''}
+          ${t.due ? `<span class="tag amber">${esc(t.due)}</span>` : ''}
+          <span class="small muted">${esc(t.created_at||'')}</span>
+          ${t.done ? `<span class="small muted">完成于 ${esc(t.done_at||'')}</span>` : ''}
+        </div>
+        <div class="item-actions">
+          ${t.kp ? `<button class="btn sm primary" data-todo-agent="${esc(t.course_id||'')}|${esc(t.kp_id||'')}|${esc(t.kp||'')}">让 Agent 带我复习</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-toggle]').forEach(el => el.onclick = () => toggleTodo(+el.dataset.toggle));
+  box.querySelectorAll('[data-todo-agent]').forEach(b => b.onclick = () => {
+    const [cid,kp_id,kp] = b.dataset.todoAgent.split('|');
+    navigate('agent', {type:'todo', title:kp, kp, kp_id, course_id:cid, description:'来自待办页的复习任务'});
+  });
+}
+async function toggleTodo(id) {
+  const t = S.todos.find(x => x.id === id); if (!t) return;
+  const d = await api('/api/todos/' + id, {method:'POST', body:JSON.stringify({done: !t.done, note:'待办页勾选完成'})});
+  const i = S.todos.findIndex(x => x.id === id); S.todos[i] = d.todo;
+  renderTodos();
+  if (d.todo.done) {
+    const dpm = d.dpm ? `DPM：${d.dpm.Dw_done}/${d.dpm.Dw_total} 条薄弱点已复习` : '已回写薄弱点画像';
+    toast(`完成「${t.text.slice(0,18)}…」 · ${dpm}`, {label:'看成长页', fn:()=>navigate('grow')});
+  } else {
+    toast('已重新打开这条待办，DPM 复习标记已撤销');
+  }
+}
+$$('#todoFilter .chip').forEach(b => b.onclick = () => {
+  S.todoFilter = b.dataset.filter;
+  $$('#todoFilter .chip').forEach(x => x.classList.toggle('on', x === b));
+  renderTodos();
+});
+$('#todoAdd').onclick = async () => {
+  const text = $('#todoInput').value.trim(); if (!text) return toast('先写一条待办内容');
+  const cid = $('#todoCourse').value;
+  const d = await api('/api/todos', {method:'POST', body:JSON.stringify({text, course_id:cid, source:'manual'})});
+  $('#todoInput').value = '';
+  S.todos.unshift(d.todo); renderTodos(); toast('待办已添加');
+};
+$('#todoInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('#todoAdd').click(); });
+
+/* ---------------- 我的事实 ---------------- */
+async function loadFacts() {
+  try {
+    const d = await api('/api/facts');
+    S.facts = d.facts || [];
+    $('#factCount').textContent = `${d.count || 0} 条`;
+    const box = $('#factList');
+    if (!S.facts.length) { box.innerHTML = '<div class="empty">还没有事实。</div>'; return; }
+    box.innerHTML = S.facts.map(f => `
+      <div class="fact">
+        <div class="txt">${esc(humanTech(f.text||''))}</div>
+        <div class="meta">
+          <span class="tag green">${esc(sourceLabel(f.source))}</span>
+          ${f.sample_id ? `<span class="tag">${esc(f.sample_id)}</span>` : ''}
+          ${f.date ? `<span class="tag amber">${esc(f.date)}</span>` : ''}
+          ${(f.tags||[]).map(t=>`<span class="tag violet">${esc(t)}</span>`).join('')}
+        </div>
+      </div>`).join('');
+  } catch(e) { $('#factList').innerHTML = `<div class="empty">事实加载失败：${esc(String(e))}</div>`; }
+}
+
+/* ---------------- 教学 Agent ---------------- */
+const NEW_CHAT_GREETING = '新的一段。可以问课堂里的知识点，或者点上面的「开始 8 分钟」给我一道题。我不会直接给最终答案，会先看你卡在哪一步。';
+async function loadAgent() {
+  await loadCourses();
+  renderContext();
+  const d = await api('/api/agent/messages?session_id=' + encodeURIComponent(S.sessionId));
+  S.messages = d.messages || [];
+  renderStrategy(d.strategy || S.strategy);
+  renderMessages();
+  renderQuickPrompts();
+  renderAgentWeakList();
+}
+function renderStrategy(st) {
+  if (!st) return;
+  S.strategy = Object.assign({}, S.strategy, st);
+  $('#strategyLabel').textContent = st.label || '苏格拉底式启发引导';
+  $('#strategyLevel').textContent = 'Lv.' + (st.level || 2);
+  $('#strategyDesc').textContent = (st.levels && st.levels.find(x=>x.level===st.level) || {}).desc || st.desc || '不直接给答案，用问题把思路逼出来';
+  $('#strategyTurns').textContent = '第 ' + (st.turns || 0) + ' 轮';
+  $$('#lvbar span').forEach((el,i) => el.classList.toggle('on', i < (st.level || 2)));
+}
+function renderMessages() {
+  const box = $('#messages');
+  if (!S.messages.length) {
+    box.innerHTML = `<div class="msg"><div class="who">M</div><div class="bubble">${esc(NEW_CHAT_GREETING)}</div></div>`;
+    return;
+  }
+  box.innerHTML = S.messages.map(m => {
+    const meta = m.meta || {};
+    if (m.role === 'user') {
+      return `<div class="msg user"><div class="who">你</div><div class="bubble">${esc(m.content||'')}</div></div>`;
+    }
+    const parts = String(m.content||'').split('\n\n');
+    const reply = parts[0] || '';
+    const probe = parts.slice(1).join('\n\n');
+    const evs = (meta.ev_ids || []).map(x => `<span class="evid">${esc(x)}</span>`).join(' ');
+    return `<div class="msg"><div class="who">M</div><div class="bubble">${esc(reply)}${probe?`<div class="probe">${esc(probe)}</div>`:''}${evs?`<div class="evchips">${evs}</div>`:''}</div></div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+function appendMessage(role, html) {
+  const box = $('#messages');
+  if (box.querySelector('.bubble') && !S.messages.length) box.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : '');
+  div.innerHTML = `<div class="who">${role==='user'?'你':'M'}</div><div class="bubble">${html}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+function renderQuickPrompts() {
+  const box = $('#quickPrompts');
+  const d = S.digest || {};
+  const weak = (d.weak_items || [])[0];
+  const items = [];
+  if (weak) {
+    items.push(`我卡在「${weak.kp}」了，先别给答案`);
+    items.push(`给我一道「${weak.kp}」的变式题`);
+  }
+  items.push('我今天该先复习什么？', '帮我看看这条课堂证据能推出什么');
+  box.innerHTML = items.map(x => `<button data-q="${esc(x)}">${esc(x)}</button>`).join('');
+  box.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { $('#chatInput').value = b.dataset.q; sendMessage(); });
+}
+function renderAgentWeakList() {
+  const d = S.digest || {};
+  const items = d.weak_items || [];
+  $('#agentWeakList').innerHTML = items.slice(0,3).map(it => `
+    <div class="mini-weak"><b>${esc(it.kp||'')}</b><span>${esc(it.note||'')}</span>
+      <div class="item-actions"><button class="btn sm" data-weakctx="${esc(it.course_id)}|${esc(it.kp_id||'')}|${esc(it.kp||'')}">带进对话</button></div>
+    </div>`).join('') || '<div class="mini-weak">还没有薄弱点</div>';
+  $('#agentWeakList').querySelectorAll('[data-weakctx]').forEach(b => b.onclick = () => {
+    const [cid,kp_id,kp] = b.dataset.weakctx.split('|');
+    setContext({type:'weak', title:kp, kp, kp_id, course_id:cid, description:'来自 DPM 薄弱点'});
+    toast('已带入上下文：' + kp);
+  });
+}
+async function sendMessage() {
+  const input = $('#chatInput');
+  const text = input.value.trim();
+  if (!text || sendMessage._busy) return;
+  sendMessage._busy = true;
+  $('#sendBtn').disabled = true;
+  input.value = '';
+  appendMessage('user', esc(text));
+  appendMessage('assistant', '<span class="muted">正在看你的课堂证据…</span>');
+  const loading = $('#messages').lastElementChild;
+  try {
+    const d = await api('/api/agent/ask', {method:'POST', body:JSON.stringify({
+      session_id: S.sessionId, message: text, context: S.context || {},
+      course_id: S.course || '',
+    })});
+    loading.remove();
+    const evs = (d.sources || []).map(x => `<span class="evid" title="${esc(x.text||'')}">${esc(x.ev_id||'')}</span>`).join(' ');
+    appendMessage('assistant', `${esc(d.reply||'')}${d.probing_question?`<div class="probe">${esc(d.probing_question)}</div>`:''}${evs?`<div class="evchips">${evs}</div>`:''}`);
+    renderStrategy(d.strategy);
+    S.messages.push({role:'user', content:text, context:S.context||{}}, {role:'assistant', content:[d.reply,d.probing_question].filter(Boolean).join('\n\n'), meta:{ev_ids:(d.sources||[]).map(x=>x.ev_id)}});
+    if (d.todo_created) {
+      toast(`已自动写入待办：${d.todo_created.text.slice(0,22)}…`, {label:'去待办页', fn:()=>navigate('todos')});
+      loadTodos();
+    }
+    if (d.gateway && d.gateway.route === 'life') {
+      toast('这条更像生活碎片，已只放进轻量记忆流，不会进知识图谱');
+    }
+    if (d.weak_kp && d.weak_kp.kp) setContext({...S.context, ...d.weak_kp, type:(S.context&&S.context.type)||'weak', title:(S.context&&S.context.title)||d.weak_kp.kp, course_id:d.course_id});
+  } catch(e) {
+    loading.remove();
+    appendMessage('assistant', `<span style="color:#c8503c">回答失败：${esc(String(e))}</span>`);
+  } finally {
+    sendMessage._busy = false;
+    $('#sendBtn').disabled = false;
+  }
+}
+$('#sendBtn').onclick = sendMessage;
+$('#chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+$('#newChat').onclick = async () => {
+  await api('/api/agent/reset', {method:'POST', body:JSON.stringify({session_id:S.sessionId})});
+  S.sessionId = 's-' + Date.now().toString(36);
+  localStorage.setItem('mm_session', S.sessionId);
+  S.messages = []; renderMessages(); setContext(null); toast('已开启新对话');
+};
+
+/* ---------------- 首页快捷按钮 ---------------- */
+$('#start8').onclick = () => {
+  const d = S.digest || {};
+  const cta = d.cta || {};
+  if (cta.context_type === 'insight' && (d.insights||[])[0]) {
+    navigate('agent', (d.insights[0].context || {type:'insight', title:d.insights[0].title, description:d.insights[0].description}));
+  } else if (cta.context_type === 'todo' && (d.todos_open||[])[0]) {
+    const t = d.todos_open[0];
+    navigate('agent', {type:'todo', title:t.text, kp:t.kp, kp_id:t.kp_id, course_id:t.course_id, description:'来自今日待办'});
+  } else if (d.weak) {
+    navigate('agent', {type:'weak', title:d.weak.kp, kp:d.weak.kp, kp_id:d.weak.kp_id, course_id:d.weak.course_id, description:d.weak.note});
+  } else {
+    navigate('agent');
+  }
+};
+$('#quickRecord').onclick = () => { location.href = '/hardware'; };
+$('#quickAsk').onclick = () => { navigate('agent'); $('#chatInput').focus(); };
+$('#newRecord').onclick = () => { location.href = '/hardware'; };
+
+/* ---------------- 启动 ---------------- */
+function renderAllStatic() {
+  renderContext();
+  renderMessages();
+}
+(async function init(){
+  applyJury();
+  const hash = (location.hash || '').replace('#/','');
+  if (PAGE_TITLES[hash]) S.page = hash;
+  try { await loadCourses(); } catch(e) { console.warn(e); }
+  await loadHome();
+  navigate(S.page);
+  setInterval(() => { if (S.page === 'home') loadHomeSilent(); }, 60000);
+})();
+async function loadHomeSilent() {
+  try { const d = await api('/api/digest/today'); S.digest = d; } catch(e) {}
+}
+</script>
+</body>
+</html>

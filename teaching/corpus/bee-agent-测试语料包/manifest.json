@@ -1,0 +1,357 @@
+{
+  "name": "Bee Agent 测试语料包（隐私已脱敏）",
+  "version": "1.0",
+  "timezone": "Asia/Shanghai",
+  "created": "2026-11-14",
+  "source_label": "Bee",
+  "disclaimer": "摘要、事实、待办和建议均来自 Bee 对真实录音的原始生成结果，已做隐私脱敏，不能当作标准答案或官方提示词。转写是输入，摘要等是对照输出。",
+  "scrubbed_fields": [
+    "真实姓名与证件名",
+    "老师/同学/合作者姓名",
+    "本校与目标院校全称及常用简称",
+    "院系名称",
+    "精确绩点与百分制分数",
+    "邮箱、手机号、QQ、微信号、证件号",
+    "宿舍/教室门牌与精确地址、经纬度",
+    "Bee 用户编号与原始会话编号",
+    "民族与生源地等身份信息",
+    "经期、亲密关系等私人生活内容（已删除，不纳入语料）",
+    "邮件原文、日历明细、照片"
+  ],
+  "samples": [
+    {
+      "id": "classroom-01",
+      "category": "classroom",
+      "title": "比较教育学（双语）：国别教育比较的四个维度",
+      "date": "2026-11-12",
+      "path": "classroom/sample-01/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "scrubbed_fields": [
+        "同学甲–己（原汇报小组成员真实姓名）",
+        "精确校园地址与经纬度",
+        "课后私人闲聊（已删除）",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "classroom-02",
+      "category": "classroom",
+      "title": "课程与教学论：后现代课程理论与多尔四R",
+      "date": "2026-11-13",
+      "path": "classroom/sample-02/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "related_sample": "classroom-03",
+      "scrubbed_fields": [
+        "本校校名",
+        "精确校园地址与经纬度",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "classroom-03",
+      "category": "classroom",
+      "title": "课程与教学论：永恒主义教育思想",
+      "date": "2026-11-13",
+      "path": "classroom/sample-03/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "related_sample": "classroom-02",
+      "scrubbed_fields": [
+        "转写中的称呼",
+        "精确校园地址与经纬度",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "classroom-04",
+      "category": "classroom",
+      "title": "讲座：人工智能究竟多“智能”——AI 评估的新科学前沿",
+      "date": "2026-11-12",
+      "path": "classroom/sample-04/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "scrubbed_fields": [
+        "精确位置",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "project-01",
+      "category": "project",
+      "title": "留学咨询：从教育学转向 AI＋教育 / 产品与管理方向",
+      "date": "2026-11-12",
+      "path": "project/sample-01/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "scrubbed_fields": [
+        "用户真名",
+        "咨询老师原姓氏",
+        "本校与一揽子目标院校名称",
+        "本院名称",
+        "精确绩点与百分制分数",
+        "生源地",
+        "精确位置",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "project-02",
+      "category": "project",
+      "title": "项目讨论：自进化 AI 教学产品的机制与分工",
+      "date": "2026-11-11",
+      "path": "project/sample-02/",
+      "files": [
+        "transcript.txt",
+        "summary.md",
+        "facts.json",
+        "todos.json",
+        "meta.json"
+      ],
+      "scrubbed_fields": [
+        "用户真名",
+        "队友称呼",
+        "精确位置",
+        "原始会话编号"
+      ]
+    },
+    {
+      "id": "insight-01",
+      "category": "grow",
+      "kind": "insight",
+      "title": "留学咨询揭示了你正在\"专业锚定\"与\"身份逃离\"之间摇摆。",
+      "date": "2026-11-14",
+      "path": "grow/insight-01/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "project-01",
+        "daily-01"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-02",
+      "category": "grow",
+      "kind": "insight",
+      "title": "你对\"公平测试条件\"和\"反捷径\"的学术敏感，正在从课堂迁移到自我评估。",
+      "date": "2026-11-13",
+      "path": "grow/insight-02/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "classroom-04",
+        "project-01"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-03",
+      "category": "grow",
+      "kind": "insight",
+      "title": "教育AI项目的伦理自觉正在超越技术实现速度。",
+      "date": "2026-11-14",
+      "path": "grow/insight-03/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "project-02",
+        "daily-02"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-04",
+      "category": "grow",
+      "kind": "insight",
+      "title": "你的\"第二大脑\"系统正在从工具理想主义滑向运维负担。",
+      "date": "2026-11-14",
+      "path": "grow/insight-04/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "daily-02"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-05",
+      "category": "grow",
+      "kind": "insight",
+      "title": "你对\"批判性使用AI\"的焦虑与行动，正在形成一套个人化的AI伦理工作流。",
+      "date": "2026-11-13",
+      "path": "grow/insight-05/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "classroom-04"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-06",
+      "category": "grow",
+      "kind": "insight",
+      "title": "你的职业方向正在从\"教育技术\"向更硬核的AI产品/管理岗位快速收敛。",
+      "date": "2026-11-13",
+      "path": "grow/insight-06/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "project-01",
+        "daily-01"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "insight-07",
+      "category": "grow",
+      "kind": "insight",
+      "title": "\"第二大脑\"和教学Agent的构想正在从个人工具向团队基础设施升级，但技术实现与教育理念之间存在张力。",
+      "date": "2026-11-12",
+      "path": "grow/insight-07/",
+      "files": [
+        "insight.json",
+        "meta.json"
+      ],
+      "related_samples": [
+        "project-02"
+      ],
+      "scrubbed_fields": [
+        "目标院校简称",
+        "可能指向个人身份的措辞",
+        "原始洞察编号"
+      ]
+    },
+    {
+      "id": "daily-01",
+      "category": "grow",
+      "kind": "daily",
+      "title": "每日回顾 2026-11-12：在AI升学规划、教育思辨与内容创作中，逐渐勾勒未来方向。",
+      "date": "2026-11-12",
+      "path": "grow/daily-01/",
+      "files": [
+        "daily.md",
+        "meta.json"
+      ],
+      "related_samples": [
+        "classroom-01",
+        "classroom-04",
+        "project-01"
+      ],
+      "scrubbed_fields": [
+        "用户真名",
+        "本校与目标院校",
+        "精确绩点",
+        "邮件账号与邮件正文",
+        "精确地址与经纬度",
+        "民族与生源地表述（已删除）",
+        "私人生活段落（已删除）",
+        "原始每日回顾编号"
+      ]
+    },
+    {
+      "id": "daily-02",
+      "category": "grow",
+      "kind": "daily",
+      "title": "每日回顾 2026-11-13：课程反思与黑客松共创并行，教育AI在快速迭代中逐渐成形。",
+      "date": "2026-11-13",
+      "path": "grow/daily-02/",
+      "files": [
+        "daily.md",
+        "meta.json"
+      ],
+      "related_samples": [
+        "classroom-02",
+        "classroom-03",
+        "project-02"
+      ],
+      "scrubbed_fields": [
+        "用户真名",
+        "本校与目标院校",
+        "精确绩点",
+        "邮件账号与邮件正文",
+        "精确地址与经纬度",
+        "民族与生源地表述（已删除）",
+        "私人生活段落（已删除）",
+        "原始每日回顾编号"
+      ]
+    },
+    {
+      "id": "shared-rule-classroom",
+      "category": "shared",
+      "title": "用户规则：课堂或讲座纪要",
+      "date": "2026-11-11",
+      "path": "shared/",
+      "files": [
+        "用户规则-课堂或讲座.md",
+        "用户规则-课堂或讲座.json"
+      ],
+      "scrubbed_fields": [
+        "用户真名"
+      ]
+    }
+  ]
+}

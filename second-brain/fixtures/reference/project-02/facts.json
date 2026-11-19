@@ -1,0 +1,12 @@
+[
+  {
+    "id": "related-fact-01",
+    "source": "related_user_fact",
+    "note": "非本段自动抽取，但与本段产品讨论直接相关，可作记忆输入测试。",
+    "text": "曾体验 Aristotle 教学 AI 的微积分和哲学课程，并将其引导式提问、知识诊断以及区分“在帮助下完成”和“独立掌握”的教学机制视为值得研究的设计。",
+    "tags": [
+      "education",
+      "technology"
+    ]
+  }
+]

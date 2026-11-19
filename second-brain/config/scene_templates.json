@@ -1,0 +1,41 @@
+{
+  "_note": "场景 → 模板（§5.1 + §7.3#1：规则做成按场景的模板配置，场景分类后直接注入，100% 生效）。sections 顺序即输出顺序；optional=true 的小节没内容就不写。",
+  "version": "tpl-2026-11-15",
+  "default": {
+    "sections": [
+      {"title": "Summary", "hint": "2–4 句，说清谁、在做什么、结果"},
+      {"title": "Atmosphere", "hint": "一句"},
+      {"title": "Key Takeaways", "hint": "5–15 条，具体信息、数字、名称、关键结论加粗"},
+      {"title": "Action Items", "hint": "只列对话里明确的承诺", "optional": true}
+    ]
+  },
+  "lecture": {
+    "title_rule": "short_summary 用课程名（来自课表/日历），再加一句本节内容",
+    "sections": [
+      {"title": "要记住的", "hint": "作业、考核、截止；老师说「另行通知/之后再通知」的写「日期待通知」"},
+      {"title": "本节课回答的问题", "hint": "一两句"},
+      {"title": "知识点", "hint": "按知识点分节"},
+      {"title": "复习自测", "hint": "1–2 题，答案另起一行"}
+    ]
+  },
+  "meeting": {
+    "sections": [
+      {"title": "Summary", "hint": "2–4 句"},
+      {"title": "Key Takeaways", "hint": "结论与决定"},
+      {"title": "Division of Work", "hint": "分工", "optional": true},
+      {"title": "Action Items", "hint": "明确承诺", "optional": true},
+      {"title": "Still worth clarifying", "hint": "未决问题", "optional": true}
+    ]
+  },
+  "one_on_one": {
+    "sections": [
+      {"title": "Summary", "hint": "2–4 句"},
+      {"title": "Key Takeaways", "hint": "对方给出的建议与依据"},
+      {"title": "Action Items", "hint": "明确承诺", "optional": true},
+      {"title": "Still worth clarifying", "hint": "未决问题", "optional": true}
+    ]
+  },
+  "casual": {"inherit": "default"},
+  "media": {"inherit": "default"},
+  "mixed": {"inherit": "default"}
+}

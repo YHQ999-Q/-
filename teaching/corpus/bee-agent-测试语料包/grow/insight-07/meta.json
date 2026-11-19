@@ -1,0 +1,19 @@
+{
+  "sample_id": "insight-07",
+  "category": "grow",
+  "kind": "insight",
+  "title": "\"第二大脑\"和教学Agent的构想正在从个人工具向团队基础设施升级，但技术实现与教育理念之间存在张力。",
+  "date": "2026-11-12",
+  "generated_at": "2026-11-12 03:23:56",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "related_samples": [
+    "project-02"
+  ],
+  "notes": "第二大脑与教学 Agent 从个人工具升级为团队基础设施时的张力。 这是 Bee Grow 的原生产出（已脱敏），不是标准答案。",
+  "scrubbed_fields": [
+    "目标院校简称",
+    "可能指向个人身份的措辞",
+    "原始洞察编号"
+  ]
+}

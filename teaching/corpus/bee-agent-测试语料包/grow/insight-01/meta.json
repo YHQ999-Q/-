@@ -1,0 +1,20 @@
+{
+  "sample_id": "insight-01",
+  "category": "grow",
+  "kind": "insight",
+  "title": "留学咨询揭示了你正在\"专业锚定\"与\"身份逃离\"之间摇摆。",
+  "date": "2026-11-14",
+  "generated_at": "2026-11-14 03:23:49",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "related_samples": [
+    "project-01",
+    "daily-01"
+  ],
+  "notes": "由 11/12 留学咨询等会话生成的成长洞察。 这是 Bee Grow 的原生产出（已脱敏），不是标准答案。",
+  "scrubbed_fields": [
+    "目标院校简称",
+    "可能指向个人身份的措辞",
+    "原始洞察编号"
+  ]
+}

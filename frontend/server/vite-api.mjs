@@ -1,0 +1,4 @@
+import {handleApi} from './api.mjs'
+import {loadEnv} from 'vite'
+export function beeApi(){return {name:'bee-api',configureServer(server){install(server)},configurePreviewServer(server){install(server)}}}
+function install(server){const env=loadEnv('development',process.cwd(),'');server.middlewares.use(async(req,res,next)=>{if(!req.url?.startsWith('/api/'))return next();try{const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>11000000){res.writeHead(413);res.end('{"error":"请求过大"}');return}chunks.push(chunk)}const request=new Request('http://'+req.headers.host+req.url,{method:req.method,headers:req.headers,body:req.method==='GET'||req.method==='HEAD'?undefined:Buffer.concat(chunks)});const response=await handleApi(request,{...env,...process.env});res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()))}catch{res.writeHead(500);res.end('{"error":"本地接口错误"}')}})}

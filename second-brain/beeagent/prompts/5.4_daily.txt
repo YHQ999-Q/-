@@ -1,0 +1,12 @@
+// 根据 Bee 输出反推的还原版，不是官方原文
+// 来源：research/bee-agent-逆向.md §5.4 每日回顾
+// 以 // 开头的行是注释，不会发给模型。
+请为用户 {{user_name}} 写 {{date}} 的每日回顾。
+输入：当天全部会话的标题与摘要（按时间排序）{{conversations}}；日历 {{calendar}}；邮件摘要 {{emails}}；到访地点 {{locations}}；照片说明 {{photos}}。
+
+输出 JSON：
+- short_summary：一句 20–35 字、有温度的当日主题句，概括当天的主线与情绪。
+- summary：Markdown，# Summary（3–5 段，按主题而非时间流水，串联课程、项目、人际与生活）；# Atmosphere（1–2 句）；# Key Takeaways（5–10 条）。
+- email_summary：用"你"称呼，3–5 句，只写需要用户注意的事项。
+- calendar_summary：2–4 句，把日程与当天对话内容联系起来。
+不得出现输入里没有的事实；遇到敏感私人内容只做概括。

@@ -1,0 +1,20 @@
+{
+  "sample_id": "classroom-04",
+  "category": "classroom",
+  "title": "讲座：人工智能究竟多“智能”——AI 评估的新科学前沿",
+  "date": "2026-11-12",
+  "start": "2026-11-12 18:55:27",
+  "end": "2026-11-12 20:30:20",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "utterance_count": 555,
+  "notes": "线上学术讲座。讲者、图灵、Goodhart、Eliza 等公开学术人名与术语保留。本段摘要仍为 Bee 默认模板。",
+  "scrubbed_fields": [
+    "精确位置",
+    "原始会话编号"
+  ],
+  "related_grow_samples": [
+    "insight-02",
+    "insight-05"
+  ]
+}
