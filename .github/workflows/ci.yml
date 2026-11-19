@@ -48,8 +48,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e "apps/api[dev]"
       - name: 静态导入检查
-        working-directory: opentutor
-        run: python -c "from apps.api.main import app; print('OpenTutor app 可导入:', app.title)"
+        # main.py 用 `from config import settings`，须在 apps/api 目录内运行
+        run: |
+          cd opentutor/apps/api
+          python -c "from main import app; print('OpenTutor app 可导入:', app.title)"
 
   security-scan:
     name: 敏感信息扫描 (不变量)
