@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教学 Agent · MetaMind</title>
+<style>
+  /* ===== 与队友站点完全一致的 token（从他 CSS 里抠出来的） ===== */
+  :root{
+    --yellow:#ffd900; --ink:#24241b; --muted:#76766d;
+    --line:#e7e7de; --cream:#fdf5cd; --bg:#f7f7f2;
+    --card:#ffffff; --red:#c8503c; --green:#2f6f4e; --amber:#b07d1a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 56px}
+
+  /* ===== Hero：今天学什么 ===== */
+  .hero{
+    position:relative;overflow:hidden;border-radius:24px;padding:26px 30px;
+    background:linear-gradient(110deg,#ffd900,#ffe660 55%,#fdf5cd);
+    display:flex;justify-content:space-between;align-items:center;gap:24px;
+  }
+  .hero h1{margin:0 0 6px;font-size:20px;line-height:1.5;font-weight:700;letter-spacing:-.2px}
+  .hero p{margin:0;font-size:13.5px;color:#5d5a3a;max-width:640px}
+  .hero .meta{font-size:12.5px;color:#6a6538;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+  .hero button{
+    flex:none;border:none;border-radius:14px;background:var(--ink);color:#fff;
+    font-family:inherit;font-size:14px;font-weight:600;padding:13px 22px;cursor:pointer;
+    transition:.15s;white-space:nowrap;
+  }
+  .hero button:hover{transform:translateY(-1px)}
+  .hero button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ===== 标签页 ===== */
+  .tabs{display:flex;gap:6px;margin:22px 0 16px}
+  .tab{
+    border:1px solid var(--line);background:#fff;color:var(--muted);
+    font-family:inherit;font-size:13.5px;padding:8px 18px;border-radius:999px;cursor:pointer;transition:.15s;
+  }
+  .tab:hover{border-color:#d6d6ca}
+  .tab.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;margin-bottom:14px}
+  .card.live{border-color:#e9d77a;box-shadow:0 2px 18px rgba(255,217,0,.16)}
+  .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);
+       font-family:ui-monospace,Consolas,monospace;margin-bottom:8px}
+  .row .tag{color:var(--amber)}
+  .card h2{margin:0 0 12px;font-size:16px;font-weight:700}
+  .kv{display:flex;gap:10px;font-size:13px;line-height:1.9;margin-bottom:2px}
+  .kv b{flex:none;width:68px;color:var(--muted);font-weight:500}
+  .kv span{flex:1;color:#3d3d33}
+  .kv .wait{color:#b9b9ae}
+  .conclusion{
+    margin:14px 0 8px;padding:13px 15px;border-radius:12px;background:var(--cream);
+    font-size:14px;line-height:1.85;border-left:3px solid var(--yellow);
+  }
+  .steps{margin:10px 0 0;padding-left:20px;font-size:14px;line-height:2;color:#3d3d33}
+  .steps li::marker{color:var(--amber);font-weight:700}
+  .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+        font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .pill{font-size:11.5px;padding:2px 10px;border-radius:999px;background:var(--cream);color:#7a6412}
+
+  /* ===== 错误指纹 ===== */
+  .finger{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+  @media(max-width:760px){.finger{grid-template-columns:repeat(2,1fr)}}
+  .fp{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+  .fp .t{font-size:13px;font-weight:600}
+  .fp .n{font-size:22px;font-weight:700;letter-spacing:-.5px;margin:2px 0}
+  .fp .note{font-size:11.5px;color:var(--muted);line-height:1.6}
+  .fp .bar{height:5px;border-radius:3px;background:#f0f0e8;margin:8px 0 6px;overflow:hidden}
+  .fp .bar i{display:block;height:100%;background:var(--yellow);border-radius:3px}
+  .fp .up{color:var(--red)} .fp .down{color:var(--green)}
+
+  /* ===== 图谱 ===== */
+  .graphbox{position:relative;background:#fbfbf6;border:1px solid var(--line);border-radius:20px;
+            height:480px;overflow:hidden}
+  canvas{width:100%;height:100%;display:block;cursor:pointer}
+  .chips{position:absolute;top:12px;left:14px;right:14px;display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);
+        color:#a8a89c;background:#fff;transition:.25s}
+  .chip.done{color:var(--green);border-color:#cfe0d6}
+  .chip.now{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip.bad{color:var(--red);border-color:#e6c3bb}
+  .evpanel{position:absolute;left:14px;bottom:14px;max-width:420px;background:#fff;
+           border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:12.5px;
+           line-height:1.85;display:none;box-shadow:0 8px 24px rgba(36,36,27,.08)}
+  .evpanel.show{display:block}
+  .evpanel .k{color:var(--muted)}
+  .legend{position:absolute;right:14px;bottom:14px;font-size:11.5px;color:var(--muted);
+          background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;line-height:1.9}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+  .verbar{position:absolute;right:14px;top:12px;font-size:12px;color:var(--muted);background:#fff;
+          border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+  .verbar b{color:var(--ink)}
+
+  /* ===== 进化日志 ===== */
+  .tl{position:relative;padding-left:22px}
+  .tl:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line)}
+  .ver{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;
+       padding:15px 17px;margin-bottom:11px}
+  .ver:before{content:"";position:absolute;left:-22px;top:22px;width:9px;height:9px;border-radius:50%;
+              background:#d8d8cc;border:2px solid var(--bg)}
+  .ver.active{border-color:#e5cd55;background:#fffdf2}
+  .ver.active:before{background:var(--yellow);box-shadow:0 0 0 4px rgba(255,217,0,.28)}
+  .ver .h{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .ver .vid{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:700;color:var(--amber)}
+  .ver .title{font-weight:600;font-size:14.5px}
+  .ver .time{color:var(--muted);font-size:12px;margin-left:auto}
+  .ver .m{margin-top:7px;font-size:13px;color:#4a4a3f}
+  .ver .m .k{color:var(--muted)}
+  .ver .acts{display:flex;gap:8px;margin-top:11px}
+  .ver .acts button{border:1px solid var(--line);background:#fff;border-radius:10px;
+                    font-family:inherit;font-size:12.5px;padding:5px 13px;cursor:pointer;color:var(--ink)}
+  .ver .acts button:hover{border-color:#c9c9bb}
+  .ver .acts button.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .badge{font-size:11px;padding:2px 9px;border-radius:999px;background:#f2f2ea;color:#6b6b60}
+  .badge.now{background:var(--cream);color:#7a6412}
+
+  .diff{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.9;
+        background:#fbfbf6;border:1px solid var(--line);border-radius:12px;padding:13px 15px;overflow-x:auto}
+  .diff .l{display:block;padding:0 6px;border-radius:4px}
+  .diff .del{background:#f8e3de;color:#8a3b28}
+  .diff .add{background:#e3efe7;color:#265940}
+  .diff .ctx{color:#8f8f83}
+  .bars{margin-top:12px}
+  .bw{display:flex;align-items:center;gap:9px;font-size:12.5px;margin:5px 0}
+  .bw .lb{width:46px;color:var(--muted)}
+  .bw .b{height:9px;border-radius:5px;background:#e8e8dd}
+  .bw .b.new{background:var(--yellow)}
+
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:34px 0}
+  .note{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 今天学什么 ===== -->
+  <div class="hero">
+    <div>
+      <h1 id="planTitle">正在读取你的学习计划…</h1>
+      <p id="planReason"></p>
+      <div class="meta">
+        <span id="planMeta"></span>
+        <span id="planStudent"></span>
+      </div>
+    </div>
+    <button id="btnStart" disabled>开始这一段</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-pane="p-answer">解答</button>
+    <button class="tab" data-pane="p-graph">知识图谱</button>
+    <button class="tab" data-pane="p-evo">它怎么变的</button>
+  </div>
+
+  <!-- ===== 解答 ===== -->
+  <div class="pane on" id="p-answer">
+    <div class="card" id="fingerCard">
+      <div class="row"><span class="tag"># 你怎么错的</span><span>近 30 天</span></div>
+      <div class="finger" id="finger"></div>
+      <p class="note">这张表不是"知识点掌握度"，是**错误模式**。同一个坑反复掉，才值得专门练。</p>
+    </div>
+
+    <div id="cards">
+      <div class="card">
+        <div class="row"><span class="tag"># 等待开始</span><span>—</span></div>
+        <h2>点右上角「开始这一段」</h2>
+        <div class="kv"><b>会发生什么</b><span>识别题目 → 听懂你的问题 → 判断你卡在哪 → 冲突时知识图谱自己改 → 给你一张能看懂的解答卡</span></div>
+        <div class="foot"><span>切到「知识图谱」能看到它思考的过程</span><span class="pill">同一份数据，两个视角</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 图谱 ===== -->
+  <div class="pane" id="p-graph">
+    <div class="graphbox">
+      <div class="chips" id="chips"></div>
+      <div class="verbar">图谱版本 <b id="kgVer">v3</b></div>
+      <canvas id="cv"></canvas>
+      <div class="evpanel" id="ev">
+        <h4 id="evTitle" style="margin:0 0 6px;font-size:13px">节点</h4>
+        <div id="evBody"></div>
+      </div>
+      <div class="legend">
+        <div><i style="background:#e6d79a"></i>稳定</div>
+        <div><i style="background:#ffd900"></i>正在重构</div>
+        <div><i style="background:#c8503c"></i>冲突</div>
+      </div>
+    </div>
+    <p class="note">点任意节点，可以看到它的证据（原始语音转写 + 图像识别结果）。</p>
+  </div>
+
+  <!-- ===== 进化 ===== -->
+  <div class="pane" id="p-evo">
+    <div class="card">
+      <div class="row"><span class="tag"># 教学方法的变更记录</span><span>可回滚</span></div>
+      <h2 style="margin-bottom:6px">它不是"会自我进化"，是<strong>每次进化都有据可查</strong></h2>
+      <div class="tl" id="timeline"></div>
+      <p class="note">每条都写着：改了什么、为什么改、改完好了多少（样本量 n）、能不能退回去。</p>
+    </div>
+    <div class="card" id="diffCard" style="display:none">
+      <div class="row"><span class="tag" id="diffTitle">版本详情</span><span></span></div>
+      <div id="diffBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const API = '';                      // 同源；跨域部署时填 http://host:5000
+const STAGES = ['rx','asr','ocr','align','retrieve','judge','patch','guard','commit','evolve'];
+const LABEL = {rx:'接收',asr:'转写',ocr:'识别',align:'对齐',retrieve:'检索',
+               judge:'裁决',patch:'候选',guard:'校验',commit:'提交',evolve:'策略'};
+
+/* ---------- 标签页 ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on'); $(t.dataset.pane).classList.add('on');
+    if(t.dataset.pane==='p-graph'){ resizeCanvas(); layout(true); }
+  };
+});
+
+/* ---------- 计划 / 画像 ---------- */
+fetch(API+'/api/teach/plan').then(r=>r.json()).then(d=>{
+  $('planTitle').textContent = d.title;
+  $('planReason').textContent = d.reason;
+  $('planMeta').textContent = `约 ${d.duration_min} 分钟 · ${d.items.length} 个练习`;
+}).catch(()=>{
+  $('planTitle').textContent = '后端未启动';
+  $('planReason').textContent = '先运行 python server.py，再刷新这个页面';
+});
+
+fetch(API+'/api/teach/profile').then(r=>r.json()).then(d=>{
+  $('planStudent').textContent = `${d.student.name} · ${d.student.stage} · 距考试 ${d.student.days_left} 天`;
+  const max = Math.max(...d.fingerprint.map(f=>f.count));
+  $('finger').innerHTML = d.fingerprint.map(f=>`
+    <div class="fp">
+      <div class="t">${f.type}</div>
+      <div class="n">${f.count}<span style="font-size:12px;color:var(--muted);font-weight:500"> 次</span>
+        <span class="${f.trend==='up'?'up':'down'}" style="font-size:11px;margin-left:4px">
+          ${f.trend==='up'?'↑':f.trend==='down'?'↓':'→'}</span></div>
+      <div class="bar"><i style="width:${Math.round(f.count/max*100)}%"></i></div>
+      <div class="note">${f.note}</div>
+    </div>`).join('');
+}).catch(()=>{});
+
+/* ---------- 图谱 ---------- */
+const cv = $('cv'), ctx = cv.getContext('2d');
+let G = {version:0,nodes:[],edges:[]}, pos = {}, anim = {};
+
+function resizeCanvas(){
+  const r = cv.parentElement.getBoundingClientRect();
+  if(r.width>10 && r.height>10){ cv.width = r.width; cv.height = r.height; }
+}
+function layout(force){
+  const cx = cv.width/2, cy = cv.height/2;
+  const list = G.nodes.filter(n=>n.id!=='root');
+  G.nodes.forEach(n=>{
+    if(pos[n.id] && !force) return;
+    if(n.id==='root'){ pos[n.id]={x:cx,y:cy}; return; }
+    const i = list.indexOf(n), k = Math.max(1,list.length);
+    const ang = i/k*Math.PI*2 - Math.PI/2;
+    const rad = Math.min(cv.width, cv.height)*0.30;
+    pos[n.id] = {x: cx+Math.cos(ang)*rad*1.45, y: cy+Math.sin(ang)*rad};
+  });
+  G.nodes.forEach(n=>{ if(!anim[n.id]) anim[n.id]={x:pos[n.id].x,y:pos[n.id].y,r:0,a:0}; });
+}
+const colorOf = st => st==='conflict' ? '#c8503c' : st==='pending' ? '#ffd900' : '#e6d79a';
+
+function draw(t){
+  requestAnimationFrame(draw);
+  if(cv.width<10) return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // 淡网格
+  ctx.strokeStyle='rgba(36,36,27,.045)'; ctx.lineWidth=1;
+  for(let x=0;x<cv.width;x+=44){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+  for(let y=0;y<cv.height;y+=44){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+
+  G.edges.forEach(e=>{
+    const a=anim[e.from], b=anim[e.to]; if(!a||!b) return;
+    const mx=(a.x+b.x)/2+Math.sin(t/900+a.x)*7, my=(a.y+b.y)/2+Math.cos(t/1100+a.y)*7;
+    ctx.strokeStyle='#dcdccf'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(mx,my,b.x,b.y); ctx.stroke();
+  });
+
+  G.nodes.forEach(nd=>{
+    const p = pos[nd.id] || {x:cv.width/2,y:cv.height/2};
+    const a = anim[nd.id] || (anim[nd.id]={x:p.x,y:p.y,r:0,a:0});
+    a.x += (p.x-a.x)*0.08; a.y += (p.y-a.y)*0.08; a.a += (1-a.a)*0.06 || .01;
+    const target = nd.id==='root'?30:21;
+    a.r += (target-a.r)*0.08;
+
+    const conflict = nd.status==='conflict';
+    const pulse = conflict ? 1+0.12*Math.sin(t/200) : 1;
+
+    ctx.globalAlpha = a.a*0.55;
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*1.9*pulse,0,Math.PI*2);
+    ctx.fillStyle = conflict ? 'rgba(200,80,60,.10)' : 'rgba(255,217,0,.16)';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*(conflict?pulse:1),0,Math.PI*2);
+    ctx.fillStyle = colorOf(nd.status); ctx.fill();
+    ctx.strokeStyle = conflict ? '#c8503c' : '#24241b';
+    ctx.lineWidth = 1.4; ctx.stroke();
+
+    ctx.fillStyle='#24241b';
+    ctx.font='12px Inter,"PingFang SC",sans-serif'; ctx.textAlign='center';
+    ctx.fillText(nd.label, a.x, a.y+a.r+17);
+    if(nd.conf!==undefined){
+      ctx.fillStyle='#a3a396'; ctx.font='10px ui-monospace,Consolas';
+      ctx.fillText(nd.conf.toFixed(2), a.x, a.y+a.r+30);
+    }
+  });
+}
+requestAnimationFrame(draw);
+window.addEventListener('resize', ()=>{ resizeCanvas(); layout(true); });
+
+/* ---------- 解答卡 ---------- */
+let liveCard = null;
+const now = ()=> new Date().toLocaleTimeString('zh-CN',{hour12:false});
+
+function newLiveCard(){
+  const el = document.createElement('div');
+  el.className = 'card live';
+  el.innerHTML = `
+    <div class="row"><span class="tag"># 正在解析</span><span>${now()}</span></div>
+    <h2 class="t">正在解析…</h2>
+    <div class="kv"><b>语音转写</b><span class="asr wait">等待中…</span></div>
+    <div class="kv"><b>图像识别</b><span class="ocr wait">等待中…</span></div>
+    <div class="conclusion" style="display:none"></div>
+    <ol class="steps" style="display:none"></ol>
+    <div class="foot"><span class="ver"></span><span class="strat"></span></div>`;
+  $('cards').prepend(el);
+  return el;
+}
+
+function fill(stage, p){
+  if(!liveCard) return;
+  const q = s => liveCard.querySelector(s);
+  if(stage==='asr'){ q('.asr').textContent=p.text; q('.asr').classList.remove('wait'); }
+  if(stage==='ocr'){ q('.ocr').textContent=p.text; q('.ocr').classList.remove('wait'); }
+  if(stage==='judge') q('.t').textContent = p.conflict ? '发现一处冲突，正在修正知识库' : '和记忆里的理解一致';
+  if(stage==='commit') q('.ver').innerHTML = `<span class="pill">知识图谱 → v${p.version}</span>`;
+  if(stage==='answer'){
+    q('.t').textContent = '解析完成';
+    const c = q('.conclusion'); c.style.display='block'; c.textContent = p.conclusion||'';
+    const ol = q('.steps'); ol.style.display='block'; ol.innerHTML='';
+    (p.steps||[]).forEach(s=>{ const li=document.createElement('li'); li.textContent=s; ol.appendChild(li); });
+    q('.strat').textContent = '本次策略：'+(p.strategy||'—');
+  }
+}
+
+/* ---------- 进化日志 ---------- */
+let VERSIONS = [], ACTIVE = null;
+
+function renderTimeline(){
+  $('timeline').innerHTML = VERSIONS.map(v=>{
+    const isA = v.id===ACTIVE;
+    const m = v.metrics
+      ? `<div class="m"><span class="k">证据：</span>二次正确率 ${(v.metrics.old*100).toFixed(0)}% → <b>${(v.metrics.new*100).toFixed(0)}%</b>　<span class="k">n=${v.metrics.n}</span></div>`
+      : `<div class="m"><span class="k">证据：</span>无（冷启动基线）</div>`;
+    return `<div class="ver ${isA?'active':''}">
+      <div class="h">
+        <span class="vid">${v.id}</span>
+        <span class="title">${v.title}</span>
+        ${isA?'<span class="badge now">当前线上</span>':'<span class="badge">已归档</span>'}
+        <span class="time">${v.time}</span>
+      </div>
+      <div class="m"><span class="k">理由：</span>${v.reason}</div>
+      ${m}
+      <div class="acts">
+        <button onclick="showDiff('${v.id}')">查看 diff</button>
+        ${isA?'':`<button class="p" onclick="rollback('${v.id}')">回滚到这里</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showDiff(id){
+  const v = VERSIONS.find(x=>x.id===id); if(!v) return;
+  let bars = '';
+  if(v.metrics){
+    const o=(v.metrics.old*100).toFixed(0), n=(v.metrics.new*100).toFixed(0);
+    bars = `<div class="bars">
+      <div class="bw"><span class="lb">旧</span><span class="b" style="width:${o*3}px"></span><span>${o}%</span></div>
+      <div class="bw"><span class="lb">新</span><span class="b new" style="width:${n*3}px"></span><span><b>${n}%</b></span></div>
+      <div class="note">同批历史错题 n=${v.metrics.n}</div></div>`;
+  }
+  $('diffCard').style.display='block';
+  $('diffTitle').textContent = `${v.id} · ${v.title}`;
+  $('diffBody').innerHTML = `
+    <div class="diff">
+      ${(v.diff.ctx||[]).map(l=>`<span class="l ctx">  ${l}</span>`).join('')}
+      ${(v.diff.del||[]).map(l=>`<span class="l del">- ${l}</span>`).join('')}
+      ${(v.diff.add||[]).map(l=>`<span class="l add">+ ${l}</span>`).join('')}
+    </div>${bars}`;
+  $('diffCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+async function rollback(id){
+  const r = await fetch(API+'/api/teach/evolution/'+id+'/rollback',{method:'POST'});
+  const d = await r.json();
+  if(d.ok){ ACTIVE = d.active; renderTimeline(); }
+}
+
+function loadVersions(){
+  fetch(API+'/api/teach/evolution').then(r=>r.json()).then(d=>{
+    VERSIONS = d.versions; ACTIVE = d.active; renderTimeline();
+  }).catch(()=>{});
+}
+
+/* ---------- 事件（SSE） ---------- */
+let lastId = 0;
+function setChip(stage, ok){
+  const box=$('chips');
+  if(!box.children.length) box.innerHTML = STAGES.map(s=>`<span class="chip" data-s="${s}">${LABEL[s]}</span>`).join('');
+  [...box.children].forEach(c=>{ if(c.classList.contains('now')) c.className='chip done'; });
+  const el=box.querySelector(`[data-s="${stage}"]`);
+  if(el) el.className = 'chip ' + (ok===false?'bad':'now');
+}
+
+function applyGraph(snap){
+  if(!snap) return;
+  G = snap; $('kgVer').textContent = 'v'+snap.version; layout(false);
+}
+
+function handle(ev){
+  if(ev.id && ev.id<=lastId) return;
+  if(ev.id) lastId = ev.id;
+  const p = ev.payload||{};
+
+  if(ev.stage==='rx') liveCard = newLiveCard();
+  if(ev.stage==='asr') setChip('asr');
+  if(ev.stage==='ocr') setChip('ocr');
+  if(ev.stage==='align') setChip('align');
+  if(ev.stage==='retrieve') setChip('retrieve');
+  if(ev.stage==='judge'){
+    setChip('judge');
+    G.nodes.forEach(n=>{ if(n.id===p.node_id) n.status = p.conflict?'conflict':'stable'; });
+  }
+  if(ev.stage==='patch') setChip('patch');
+  if(ev.stage==='guard') setChip('guard', p.pass);
+  if(ev.stage==='commit'){ setChip('commit'); applyGraph(p.graph); }
+  if(ev.stage==='evolve'){ setChip('evolve'); $('btnStart').disabled=false; }
+  if(ev.stage==='answer') $('btnStart').disabled=false;
+
+  fill(ev.stage, p);
+}
+
+function connect(){
+  try{
+    const es = new EventSource(API+'/api/teach/stream');
+    es.onmessage = e=>{
+      const d = JSON.parse(e.data);
+      if(d.type==='hello'){
+        applyGraph(d.graph);
+        if(d.versions){ VERSIONS=d.versions; ACTIVE=(d.versions.find(v=>v.status==='active')||{}).id; renderTimeline(); }
+      } else handle(d);
+    };
+    es.onerror = ()=>{ /* 浏览器会自动重连 */ };
+  }catch(e){}
+}
+
+$('btnStart').onclick = async ()=>{
+  $('btnStart').disabled = true;
+  $('chips').innerHTML = '';
+  await fetch(API+'/api/teach/ingest',{method:'POST',
+    body:(()=>{ const f=new FormData(); f.append('device_id','teach-page'); return f; })()});
+  setTimeout(()=>{ $('btnStart').disabled=false; }, 9000);
+};
+
+/* ---------- 点节点看证据 ---------- */
+cv.addEventListener('click', e=>{
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit = G.nodes.find(n=>{ const a=anim[n.id]; return a && Math.hypot(a.x-mx,a.y-my)<(a.r||22)+6; });
+  const box=$('ev');
+  if(hit){
+    const ev = (hit.evidence&&hit.evidence.length)? hit.evidence[hit.evidence.length-1] : null;
+    $('evTitle').textContent = hit.label;
+    $('evBody').innerHTML = `
+      <div><span class="k">状态：</span>${hit.status}　<span class="k">置信度：</span>${(hit.conf??0).toFixed(2)}</div>
+      <div style="margin-top:6px"><span class="k">证据 · 语音：</span>${ev?ev.asr:'—'}</div>
+      <div><span class="k">证据 · 图像：</span>${ev?ev.ocr:'—'}</div>`;
+    box.classList.add('show');
+  } else box.classList.remove('show');
+});
+
+/* ---------- 启动 ---------- */
+resizeCanvas(); layout(true); loadVersions(); connect();
+fetch(API+'/api/teach/session/latest').then(r=>r.json()).then(d=>{
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML = `
+    <div class="row"><span class="tag"># 上一次 · ${d.version}</span><span>已完成</span></div>
+    <h2>${d.ocr}</h2>
+    <div class="kv"><b>你说</b><span>${d.asr}</span></div>
+    <div class="conclusion">${d.conclusion}</div>
+    <ol class="steps">${(d.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+    <div class="foot"><span>本次策略：${d.strategy}</span><span class="pill">来自已确认记忆中</span></div>`;
+  $('cards').appendChild(el);
+}).catch(()=>{});
+</script>
+</body>
+</html>

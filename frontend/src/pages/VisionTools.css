@@ -1,0 +1,20 @@
+.tutor-composer-tools{display:flex;align-items:center;gap:6px;min-width:0}
+.tutor-composer-tools>span{display:flex;gap:6px;align-items:center;color:#b3a5c0;font-size:10px;margin-left:2px}
+.tutor-tool{width:30px;height:30px;border:1px solid #e6e0ed;background:#fff;border-radius:9px;display:grid;place-items:center;color:#7b4fd8;padding:0;cursor:pointer;flex-shrink:0}
+.tutor-tool:hover{background:#f8f5fc;border-color:#cbb7e5}
+.tutor-tool:disabled{opacity:.5;cursor:default}
+.tutor-tool.recording{background:#fff0f0;border-color:#e8b4b4;color:#a33}
+.tutor-vision-panel{position:relative;width:100%;max-width:864px;margin:0 auto;padding:12px 32px 0;background:#fff}
+.tutor-vision-panel-inner{display:contents}
+.tutor-vision-close{position:absolute;right:40px;top:8px;border:0;background:#f5f1fa;color:#8d7ba8;border-radius:8px;width:25px;height:25px;display:grid;place-items:center;cursor:pointer}
+.tutor-vision-head{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid #eee6fb;border-radius:12px;background:#fcfbff}
+.tutor-vision-head img{width:96px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #eee6fb;flex-shrink:0}
+.tutor-vision-head small{font-size:11px;color:#8d7ba8}
+.tutor-vision-head p{margin:4px 0 0;font-size:13px;line-height:1.5;color:#4e4268}
+.tutor-vision-answer{padding:10px 4px 0;max-height:42vh;overflow-y:auto;font-size:13px}
+.tutor-vision-answer .tutor-markdown{font-size:13px;line-height:1.75}
+.tutor-camera-backdrop{position:fixed;inset:0;z-index:130;background:#1d0b2e99;display:grid;place-items:center;padding:20px}
+.tutor-camera{background:#111;border-radius:16px;overflow:hidden;max-width:92vw;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 18px 60px #0006}
+.tutor-camera video{display:block;max-width:88vw;max-height:72vh;background:#000}
+.tutor-camera-actions{display:flex;gap:8px;justify-content:flex-end;padding:10px 12px;background:#fff}
+@media (max-width:760px){.tutor-vision-panel{padding:10px 15px 0}.tutor-vision-close{right:18px}.tutor-vision-head img{width:72px;height:56px}}

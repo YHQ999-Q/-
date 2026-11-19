@@ -1,0 +1,18 @@
+{
+  "sample_id": "classroom-03",
+  "category": "classroom",
+  "title": "课程与教学论：永恒主义教育思想",
+  "date": "2026-11-13",
+  "start": "2026-11-13 09:10:28",
+  "end": "2026-11-13 09:48:10",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "utterance_count": 68,
+  "related_sample": "classroom-02",
+  "notes": "与 classroom-02 为同一节课的后半段（约 09:10–09:48）。中间间隔约 7 分钟静音，Bee 将其拆成两段会话分别摘要。本段摘要仍偏默认模板，但追加了「复习自测」。",
+  "scrubbed_fields": [
+    "转写中的称呼",
+    "精确校园地址与经纬度",
+    "原始会话编号"
+  ]
+}

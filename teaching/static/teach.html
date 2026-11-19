@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>教学 Agent · MetaMind</title>
+<style>
+  /* ===== 与队友站点完全一致的 token（从他 CSS 里抠出来的） ===== */
+  :root{
+    --yellow:#ffd900; --ink:#24241b; --muted:#76766d;
+    --line:#e7e7de; --cream:#fdf5cd; --bg:#f7f7f2;
+    --card:#ffffff; --red:#c8503c; --green:#2f6f4e; --amber:#b07d1a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 56px}
+  .vstate{font-size:12px;color:var(--muted)}
+  .vstate.ok{color:var(--green)}
+  .vstate.warn{color:var(--amber)}
+  .vstate.bad{color:var(--red);font-weight:600}
+  .topnav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .topnav .ttl{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.2px}
+  .tn-btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;
+          padding:7px 13px;font-family:inherit;font-size:12.5px;text-decoration:none;cursor:pointer}
+  .tn-btn:hover{border-color:var(--amber)}
+  .tn-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .hist{border-top:1px solid var(--line);padding:12px 0}
+  .hist:first-child{border-top:none;padding-top:2px}
+  .histh{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+  .histh span{color:var(--muted);font-size:12px;flex:none}
+  .histq{font-size:13px;margin-top:5px;color:#3d3d33;line-height:1.7}
+  .histc{font-size:12.5px;margin-top:4px;color:var(--muted);line-height:1.7}
+
+  /* ===== Hero：今天学什么 ===== */
+  .hero{
+    position:relative;overflow:hidden;border-radius:24px;padding:26px 30px;
+    background:linear-gradient(110deg,#ffd900,#ffe660 55%,#fdf5cd);
+    display:flex;justify-content:space-between;align-items:center;gap:24px;
+  }
+  .hero h1{margin:0 0 6px;font-size:20px;line-height:1.5;font-weight:700;letter-spacing:-.2px}
+  .hero p{margin:0;font-size:13.5px;color:#5d5a3a;max-width:640px}
+  .hero .meta{font-size:12.5px;color:#6a6538;margin-top:10px;display:flex;gap:14px;flex-wrap:wrap}
+  .hero button{
+    flex:none;border:none;border-radius:14px;background:var(--ink);color:#fff;
+    font-family:inherit;font-size:14px;font-weight:600;padding:13px 22px;cursor:pointer;
+    transition:.15s;white-space:nowrap;
+  }
+  .hero button:hover{transform:translateY(-1px)}
+  .hero button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ===== 标签页 ===== */
+  .tabs{display:flex;gap:6px;margin:22px 0 16px}
+  .tab{
+    border:1px solid var(--line);background:#fff;color:var(--muted);
+    font-family:inherit;font-size:13.5px;padding:8px 18px;border-radius:999px;cursor:pointer;transition:.15s;
+  }
+  .tab:hover{border-color:#d6d6ca}
+  .tab.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 22px;margin-bottom:14px}
+  .card.live{border-color:#e9d77a;box-shadow:0 2px 18px rgba(255,217,0,.16)}
+  .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);
+       font-family:ui-monospace,Consolas,monospace;margin-bottom:8px}
+  .row .tag{color:var(--amber)}
+  .card h2{margin:0 0 12px;font-size:16px;font-weight:700}
+  .kv{display:flex;gap:10px;font-size:13px;line-height:1.9;margin-bottom:2px}
+  .kv b{flex:none;width:68px;color:var(--muted);font-weight:500}
+  .kv span{flex:1;color:#3d3d33}
+  .kv .wait{color:#b9b9ae}
+  .conclusion{
+    margin:14px 0 8px;padding:13px 15px;border-radius:12px;background:var(--cream);
+    font-size:14px;line-height:1.85;border-left:3px solid var(--yellow);
+  }
+  .steps{margin:10px 0 0;padding-left:20px;font-size:14px;line-height:2;color:#3d3d33}
+  .steps li::marker{color:var(--amber);font-weight:700}
+  .foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+        font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .pill{font-size:11.5px;padding:2px 10px;border-radius:999px;background:var(--cream);color:#7a6412}
+
+  /* ===== 历史 ===== */
+  .hitem{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;margin-bottom:9px}
+  .hitem .hrow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px}
+  .hitem .tag2{font-size:11px;padding:1px 8px;border-radius:999px;background:#f2f2ea;color:#6b6b60}
+  .hitem .ht{color:var(--muted);font-size:11.5px;margin-left:auto}
+  .hitem .hq{font-size:13px;color:#4a4a3f;margin-top:6px;line-height:1.7}
+  .hitem .ha{font-size:13px;margin-top:4px;line-height:1.7}
+  .hitem .hm{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+  /* ===== SOLO 层级 ===== */
+  .solo{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+  .solo .lv{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;
+    border-radius:12px;border:1px solid var(--line);background:#fff}
+  .solo .lv .num{flex:none;width:22px;height:22px;border-radius:7px;background:#f2f2ea;
+    color:#6b6b60;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .solo .lv .nm{font-size:13.5px;font-weight:600}
+  .solo .lv .ds{font-size:12px;color:var(--muted);line-height:1.6}
+  .solo .lv.cur{border-color:#e5cd55;background:#fffdf2}
+  .solo .lv.cur .num{background:var(--yellow);color:var(--ink)}
+  .solo .lv.tgt{border-style:dashed;border-color:#d9c85f}
+  .solo .lv .flag{margin-left:auto;font-size:11px;color:#7a6412;background:var(--cream);
+    padding:1px 8px;border-radius:999px;white-space:nowrap}
+
+  /* ===== 错误指纹 ===== */
+  .finger{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+  @media(max-width:760px){.finger{grid-template-columns:repeat(2,1fr)}}
+  .fp{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+  .fp .t{font-size:13px;font-weight:600}
+  .fp .n{font-size:22px;font-weight:700;letter-spacing:-.5px;margin:2px 0}
+  .fp .note{font-size:11.5px;color:var(--muted);line-height:1.6}
+  .fp .bar{height:5px;border-radius:3px;background:#f0f0e8;margin:8px 0 6px;overflow:hidden}
+  .fp .bar i{display:block;height:100%;background:var(--yellow);border-radius:3px}
+  .fp .up{color:var(--red)} .fp .down{color:var(--green)}
+
+  /* ===== 图谱 ===== */
+  .graphbox{position:relative;background:#fbfbf6;border:1px solid var(--line);border-radius:20px;
+            height:480px;overflow:hidden}
+  canvas{width:100%;height:100%;display:block;cursor:pointer}
+  .chips{position:absolute;top:12px;left:14px;right:14px;display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);
+        color:#a8a89c;background:#fff;transition:.25s}
+  .chip.done{color:var(--green);border-color:#cfe0d6}
+  .chip.now{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip.bad{color:var(--red);border-color:#e6c3bb}
+  .chip{cursor:pointer}
+  .evpanel{position:absolute;left:14px;bottom:14px;max-width:420px;background:#fff;
+           border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:12.5px;
+           line-height:1.85;display:none;box-shadow:0 8px 24px rgba(36,36,27,.08)}
+  .evpanel.show{display:block}
+  .evpanel .k{color:var(--muted)}
+  .legend{position:absolute;right:14px;bottom:14px;font-size:11.5px;color:var(--muted);
+          background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;line-height:1.9}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+  .verbar{position:absolute;right:14px;top:12px;font-size:12px;color:var(--muted);background:#fff;
+          border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+  .verbar b{color:var(--ink)}
+
+  /* ===== 进化日志 ===== */
+  .tl{position:relative;padding-left:22px}
+  .tl:before{content:"";position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line)}
+  .ver{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;
+       padding:15px 17px;margin-bottom:11px}
+  .ver:before{content:"";position:absolute;left:-22px;top:22px;width:9px;height:9px;border-radius:50%;
+              background:#d8d8cc;border:2px solid var(--bg)}
+  .ver.active{border-color:#e5cd55;background:#fffdf2}
+  .ver.active:before{background:var(--yellow);box-shadow:0 0 0 4px rgba(255,217,0,.28)}
+  .ver .h{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .ver .vid{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;font-weight:700;color:var(--amber)}
+  .ver .title{font-weight:600;font-size:14.5px}
+  .ver .time{color:var(--muted);font-size:12px;margin-left:auto}
+  .ver .m{margin-top:7px;font-size:13px;color:#4a4a3f}
+  .ver .m .k{color:var(--muted)}
+  .ver .acts{display:flex;gap:8px;margin-top:11px}
+  .ver .acts button{border:1px solid var(--line);background:#fff;border-radius:10px;
+                    font-family:inherit;font-size:12.5px;padding:5px 13px;cursor:pointer;color:var(--ink)}
+  .ver .acts button:hover{border-color:#c9c9bb}
+  .ver .acts button.p{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .badge{font-size:11px;padding:2px 9px;border-radius:999px;background:#f2f2ea;color:#6b6b60}
+  .badge.now{background:var(--cream);color:#7a6412}
+
+  .diff{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.9;
+        background:#fbfbf6;border:1px solid var(--line);border-radius:12px;padding:13px 15px;overflow-x:auto}
+  .diff .l{display:block;padding:0 6px;border-radius:4px}
+  .diff .del{background:#f8e3de;color:#8a3b28}
+  .diff .add{background:#e3efe7;color:#265940}
+  .diff .ctx{color:#8f8f83}
+  .bars{margin-top:12px}
+  .bw{display:flex;align-items:center;gap:9px;font-size:12.5px;margin:5px 0}
+  .bw .lb{width:46px;color:var(--muted)}
+  .bw .b{height:9px;border-radius:5px;background:#e8e8dd}
+  .bw .b.new{background:var(--yellow)}
+
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:34px 0}
+  .note{font-size:12.5px;color:var(--muted);margin:10px 0 0;line-height:1.8}
+
+  /* ===== 现场采集 ===== */
+  .capture{margin-top:14px}
+  .capbox b{display:flex;align-items:center;gap:8px}
+  .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;
+       stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+  .capgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:760px){.capgrid{grid-template-columns:1fr}}
+  .capbox{display:flex;flex-direction:column;gap:3px;align-items:flex-start;justify-content:center;
+          border:1px dashed #d9d9cc;border-radius:14px;padding:13px 15px;background:#fbfbf6;
+          color:var(--ink);font-family:inherit;font-size:13.5px;cursor:pointer;text-align:left;transition:.15s}
+  .capbox:hover{border-color:var(--amber);background:#fffdf2}
+  .capbox b{font-size:14px}
+  .capbox span{font-size:12px;color:var(--muted)}
+  .capbox.rec{border-color:var(--red);background:#fdf0ec}
+  .capbox.rec b{color:var(--red)}
+  .capbox.audio{cursor:default}
+  .capActions{display:flex;align-items:center;gap:9px;margin-top:7px;flex-wrap:wrap}
+  .miniBtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 12px;
+           font-family:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}
+  .miniBtn:hover{border-color:var(--amber)}
+  .miniLink{font-size:12px;color:var(--amber);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  #txtQ{width:100%;margin-top:10px;border:1px solid var(--line);border-radius:12px;
+        padding:11px 13px;font-family:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+  #txtQ:focus{outline:none;border-color:var(--amber)}
+  .caprow{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .caprow .state{font-size:12.5px;color:var(--muted)}
+  .caprow .primary{border:none;border-radius:12px;background:var(--ink);color:#fff;
+                   font-family:inherit;font-size:14px;font-weight:600;padding:11px 22px;cursor:pointer}
+  .caprow .primary:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ===== 随堂自测 ===== */
+  .q{padding:13px 0;border-top:1px solid var(--line)}
+  .q:first-child{border-top:none;padding-top:4px}
+  .qt{font-size:14px;font-weight:600;margin-bottom:9px;line-height:1.7}
+  .opts{display:flex;flex-direction:column;gap:7px}
+  .opt{text-align:left;border:1px solid var(--line);background:#fff;border-radius:11px;
+       padding:9px 13px;font-family:inherit;font-size:13.5px;color:#3d3d33;cursor:pointer;transition:.12s}
+  .opt:hover{border-color:#cfcfbf}
+  .opt.sel{border-color:var(--ink);background:#f3f3ea;font-weight:600}
+  .opt.ok{border-color:var(--green);background:#e3efe7;color:#265940}
+  .opt.bad{border-color:var(--red);background:#f8e3de;color:#8a3b28}
+  .opt:disabled{cursor:default}
+  .why{font-size:12.5px;color:#5d5a3a;background:var(--cream);border-radius:8px;
+       padding:8px 11px;margin-top:7px;line-height:1.75}
+  #quizResult{font-size:13px;color:var(--muted);margin-left:12px}
+  .quizok{color:var(--green);font-weight:600}
+  .quizbad{color:var(--red);font-weight:600}
+  .quizstrat{font-size:12.5px;color:#5d5a3a;background:var(--cream);border-radius:9px;
+             padding:8px 12px;margin:0 0 10px;line-height:1.7}
+  .gloss{display:grid;grid-template-columns:1fr 1fr;gap:7px 20px;font-size:13px;line-height:1.75}
+  @media(max-width:760px){.gloss{grid-template-columns:1fr}}
+  .gloss b{color:var(--ink)}
+
+  /* ===== 下一步建议（L3） ===== */
+  #nextActionCard{background:linear-gradient(135deg,#fffdf2,#fff);border-color:#e9d77a}
+  #nextActionCard h2{font-size:16px;margin-bottom:2px}
+  .naBtn{border:none;border-radius:11px;background:var(--ink);color:#fff;
+         font-family:inherit;font-size:13.5px;font-weight:600;padding:9px 18px;cursor:pointer}
+  .naBtn:hover{transform:translateY(-1px)}
+
+  /* ===== 回看弹层 ===== */
+  .modal{position:fixed;inset:0;background:rgba(36,36,27,.35);display:none;
+         align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal.show{display:flex}
+  .modalbox{background:#fff;border-radius:18px;width:min(760px,100%);max-height:82vh;
+            display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(36,36,27,.18)}
+  .modalhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+             padding:15px 20px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
+  .modalhead button{border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted)}
+  .modalbody{padding:8px 20px 18px;overflow:auto}
+
+  /* ===== 课程子图谱切换 ===== */
+  .graphbar{display:flex;align-items:center;gap:10px;margin:0 0 8px;flex-wrap:wrap}
+  .graphbar .gbl{font-size:12.5px;color:var(--muted);font-weight:600}
+  .graphbar select{border:1px solid var(--line);background:#fff;border-radius:9px;
+                   padding:6px 10px;font-family:inherit;font-size:13px;color:var(--ink)}
+  .graphbar .gbi{font-size:12px;color:var(--muted)}
+  .crossbox{background:#fffdf2;border:1px solid #e9d77a;border-radius:12px;
+            padding:10px 13px;font-size:12.5px;line-height:1.8;margin-bottom:8px;color:#5d5a3a}
+  .crossbox b{color:var(--ink)}
+
+  /* ===== 两轮演示 ===== */
+  .foldsum{font-size:13px;line-height:1.8;color:#3d3d33;margin:8px 0 0;
+           cursor:pointer;list-style:none;user-select:none}
+  .foldsum::-webkit-details-marker{display:none}
+  .foldsum::before{content:'▸';color:#a8a89c;margin-right:6px;display:inline-block;transition:.15s}
+  details[open] > .foldsum::before{transform:rotate(90deg)}
+  .foldbox[open] > *:not(summary){margin-top:10px}
+  .manual-form{display:flex;flex-direction:column;gap:10px;max-width:560px}
+  .manual-form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;
+                     color:var(--muted);font-weight:600}
+  .manual-form input,.manual-form textarea{border:1px solid var(--line);border-radius:10px;
+    padding:9px 12px;font-family:inherit;font-size:14px;color:var(--ink);background:#fff}
+  .manual-form textarea{resize:vertical}
+  .evsrc{flex:none;font-size:11px;padding:1px 8px;border-radius:999px;
+         background:#eef3f8;color:#3d5a74}
+  .evsrc.human{background:#fffdf2;border:1px solid #e9d77a;color:#6b5600}
+  .safe-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0;
+            border-top:1px dashed var(--line);font-size:12.5px;line-height:1.7}
+  .safe-row:first-of-type{border-top:none}
+  .safe-row .miniBtn{margin-left:auto}
+  .rej-row{display:flex;gap:10px;align-items:baseline;padding:9px 0;
+           border-top:1px dashed var(--line);font-size:12.5px;line-height:1.75}
+  .rej-row:first-of-type{border-top:none}
+  .rej-status{flex:none;font-size:11px;padding:1px 8px;border-radius:999px;
+              background:#fbeeeb;color:var(--red);font-weight:600}
+  .rej-why{color:var(--muted);font-size:11.5px}
+  .demo-courses{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+  .dcourse{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;
+           font-family:inherit;font-size:13px;color:#3d3d33;cursor:pointer;display:flex;gap:8px;align-items:center;transition:.15s}
+  .dcourse:hover{border-color:#d6d6ca}
+  .dcourse.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+  .dcourse .n{font-size:11px;background:var(--cream);color:#7a6412;border-radius:999px;padding:0 7px;line-height:18px}
+  .dcourse.on .n{background:rgba(255,255,255,.18);color:#fff}
+  .demo-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .demo-actions .primary{border:none;border-radius:12px;background:var(--ink);color:#fff;
+    font-family:inherit;font-size:14px;font-weight:600;padding:11px 22px;cursor:pointer}
+  .demo-actions .primary:hover{transform:translateY(-1px)}
+  .demo-actions .miniBtn{padding:9px 14px}
+  .dstatus{font-size:12px;padding:3px 12px;border-radius:999px;background:#f2f2ea;color:#6b6b60;white-space:nowrap}
+  .dstatus.on{background:#fff6c8;color:#6b5600;font-weight:600}
+  .dpm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+  @media(max-width:760px){.dpm-grid{grid-template-columns:1fr}}
+  .dpm-col{border:1px solid var(--line);border-radius:14px;padding:11px 13px;background:#fbfbf6}
+  .dpm-col h4{margin:0 0 7px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.2px}
+  .dmitem{font-size:12.5px;line-height:1.75;padding:5px 0;border-top:1px dashed var(--line);color:#3d3d33}
+  .dmitem:first-child{border-top:none;padding-top:0}
+  .dmitem .t{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--amber);margin-right:6px}
+  .dmitem .s{display:block;font-size:11.5px;color:var(--muted)}
+  .dpm-empty{font-size:12.5px;color:#b9b9ae}
+  .limits{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+  @media(max-width:760px){.limits{grid-template-columns:1fr}}
+  .limit{border:1px solid var(--line);border-radius:14px;padding:11px 13px;background:#fbfbf6;
+         font-size:12.5px;line-height:1.75}
+  .limit b{display:block;font-size:13px;margin-bottom:3px}
+  .limit span{color:var(--muted)}
+  .dsteps{margin-top:4px}
+  .dstep{display:grid;grid-template-columns:170px 1fr 1fr;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+  .dstep:first-child{border-top:none;padding-top:4px}
+  .dstep .dname{font-size:13.5px;font-weight:600;line-height:1.6}
+  .dstep .dname small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px}
+  .dcell{font-size:13px;line-height:1.85;border-radius:12px;padding:10px 13px;
+         background:#fbfbf6;border:1px solid var(--line);color:#3d3d33}
+  .dcell .lbl{display:block;font-size:10.5px;font-weight:700;letter-spacing:.4px;color:#a8a89c;margin-bottom:3px}
+  .dcell .src{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+  .dcell.r2.changed{background:#fffdf2;border-color:#e9d77a}
+  .dcell.r2.changed .lbl,.dcell.r2.changed .src{color:#7a6412}
+  @media(max-width:760px){.dstep{grid-template-columns:1fr;gap:7px}.dstep .dname{font-size:14px}}
+  .evitem{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px dashed var(--line);font-size:13px;line-height:1.8}
+  .evitem:first-child{border-top:none}
+  .evitem .evt{flex:none;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--amber);font-weight:600}
+  .evitem .evkind{flex:none;font-size:11px;padding:1px 8px;border-radius:999px;background:#f2f2ea;color:#6b6b60}
+  .evitem .evkind.vibe{background:#fff6c8;color:#6b5600}
+  .evitem .evkind.ocr{background:#eef3f8;color:#3d5a74}
+  .evitem .evkind.asr{background:#eef7f0;color:#2f6f4e}
+  .evitem b{font-weight:600}
+  .dgraph{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .dnode{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:#fff;color:#8a8a7e}
+  .dnode.has{border-color:#e9d77a;background:#fffdf2;color:#5d4d0f;font-weight:600}
+  .dnode.conflict{color:var(--red);border-color:#e8c5bd}
+
+  /* ===== 分层痕迹 T1/T2/T3 ===== */
+  .tag-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .layer{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;background:#fbfbf6}
+  .layer.t1{background:#f7f9fb;border-color:#dde5ec}
+  .layer.t2{background:#fffdf2;border-color:#e9d77a}
+  .layer h4{margin:0 0 6px;font-size:13px;letter-spacing:.2px}
+  .layer h4 small{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:6px}
+  .layer .kv{font-size:12.5px;line-height:1.9;color:#3d3d33}
+  .layer .kv b{color:var(--ink)}
+  .claim{padding:8px 0;border-top:1px dashed var(--line);font-size:12.5px;line-height:1.8}
+  .claim:first-of-type{border-top:none}
+  .claim .v{font-size:11px;padding:1px 8px;border-radius:999px;margin-left:6px}
+  .claim .v.pass{background:#eef7f0;color:#2f6f4e}
+  .claim .v.weak{background:#fbeeeb;color:var(--red)}
+  .claim .why{display:block;color:var(--muted);font-size:11.5px}
+  .chain{border-left:3px solid #e9d77a;padding:2px 0 2px 12px;margin-top:10px}
+  .chain .cl{font-size:12.5px;line-height:1.85;color:#3d3d33}
+  .chain .cl b{color:#5d4d0f}
+  .chain .via{display:block;font-size:12px;color:var(--muted);margin:2px 0}
+  .t3row{display:flex;gap:9px;align-items:baseline;font-size:12.5px;line-height:1.8;
+         padding:6px 0;border-top:1px dashed var(--line)}
+  .t3row:first-of-type{border-top:none}
+  .t3row .id{flex:none;font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#8a8a7e}
+  .t3row .tt{flex:none;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--amber)}
+  .note code{background:#f2f2ea;border-radius:5px;padding:1px 5px;font-size:11.5px}
+
+  /* ===== 今日记忆卡 ===== */
+  .hero p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .digest-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  @media(max-width:760px){.digest-grid{grid-template-columns:1fr}}
+  .digest-col{border:1px solid var(--line);border-radius:14px;padding:11px 13px;background:#fbfbf6}
+  .digest-col h4{margin:0 0 7px;font-size:12px;color:var(--muted);font-weight:600}
+  .digest-body{font-size:13px;line-height:1.8;color:#3d3d33;min-height:52px}
+  .digest-body b{color:var(--ink)}
+  .digest-input{display:flex;gap:6px;margin-top:8px}
+  .digest-input input{flex:1;border:1px solid var(--line);border-radius:9px;padding:6px 9px;
+                      font-family:inherit;font-size:12.5px;color:var(--ink)}
+  .digest-weak b{font-size:15px}
+  .digest-weak .miniBtn{margin-top:8px}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topnav">
+    <div class="ttl">我的教学 Agent · 知识图谱 + 硬件</div>
+    <div style="display:flex;gap:8px">
+      <a class="tn-btn" id="chatLink" href="#">← 聊天页</a>
+      <button class="tn-btn primary" onclick="showHistory()">回看</button>
+    </div>
+  </div>
+
+  <!-- ===== 今天学什么 ===== -->
+  <div class="hero">
+    <div>
+      <h1 id="planTitle">正在读取你的学习计划…</h1>
+      <p id="planReason"></p>
+      <div class="meta">
+        <span id="planMeta"></span>
+        <span id="planStudent"></span>
+        <span id="verifyState" class="vstate"></span>
+      </div>
+    </div>
+    <button id="btnStart">开始分析</button>
+  </div>
+
+  <!-- ===== 今日记忆（Bee 风格摘要） ===== -->
+  <div class="card" id="digestCard">
+    <div class="row"><span class="tag"># 今日记忆</span><span id="digestDate">—</span></div>
+    <div class="digest-grid">
+      <div class="digest-col">
+        <h4>课堂沉淀 · 知识库</h4>
+        <div class="digest-body" id="digestClass">—</div>
+        <div class="digest-input">
+          <a class="miniBtn" id="btnKnowledge" href="#" target="_blank" rel="noreferrer">打开知识库 →</a>
+        </div>
+      </div>
+      <div class="digest-col">
+        <h4>今日待攻克</h4>
+        <div class="digest-body" id="digestWeak">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 现场采集：真拍照 + 真录音 ===== -->
+  <div class="card capture">
+    <div class="row"><span class="tag"># 现场采集</span><span>拍一张板书 / 说一句哪里没懂</span></div>
+    <div class="capgrid">
+      <label class="capbox" id="imgBox">
+        <input type="file" id="fImg" accept="image/*" capture="environment" style="display:none">
+        <b><svg viewBox="0 0 24 24" class="ico"><path d="M3 8.5h3l1.5-2h9l1.5 2h3v10H3z"/><circle cx="12" cy="13.2" r="3.2"/></svg>拍板书</b><span id="imgName">点一下拍照，或从相册选</span>
+      </label>
+      <div class="capbox audio" id="audBox">
+        <b><svg viewBox="0 0 24 24" class="ico"><path d="M4 12h0M7 9v6M10 6.5v11M13 8v8M16 10.5v3M19 12h0"/></svg>音频</b>
+        <span id="recState">点一下开始录音，再点一下结束</span>
+        <div class="capActions">
+          <button class="miniBtn" id="btnRec" type="button">开始录音</button>
+          <label class="miniLink" id="audName">或上传录音文件
+            <input type="file" id="fAud" accept="audio/*" style="display:none">
+          </label>
+        </div>
+        <span id="audFile" style="display:none;color:var(--green)"></span>
+      </div>
+    </div>
+    <input id="txtQ" placeholder="也可以直接打字，例如：这里为什么不能直接把 sin x 换成 x？">
+    <div class="caprow">
+      <button class="primary" id="btnAnalyze">开始分析</button>
+      <span class="state" id="capState">照片 / 音频 / 文字，任选其一或组合；至少给一个。</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-pane="p-answer">解答</button>
+    <button class="tab" data-pane="p-graph">知识图谱</button>
+    <button class="tab" data-pane="p-demo">两轮演示</button>
+    <button class="tab" data-pane="p-evo">它怎么变的</button>
+  </div>
+
+  <!-- ===== 解答 ===== -->
+  <div class="pane on" id="p-answer">
+    <div class="card" id="nextActionCard" style="display:none">
+      <div class="row"><span class="tag"># 下一步建议 · L3</span><span id="naCourse"></span></div>
+      <h2 id="naLabel"></h2>
+      <p class="note" id="naReason" style="margin-top:4px"></p>
+      <div style="margin-top:10px"><button class="naBtn" id="naBtn">去做</button></div>
+    </div>
+
+    <div class="card" id="soloCard">
+      <div class="row"><span class="tag"># 你理解到哪一层（SOLO）</span><span>近 30 天 · 按真实作答算</span></div>
+      <div class="solo" id="solo"></div>
+      <p class="note" id="soloNote"></p>
+    </div>
+
+    <div id="cards">
+      <div class="card">
+        <div class="row"><span class="tag"># 等待开始</span><span>—</span></div>
+        <h2>先拍一张板书，或者说一句哪里没懂</h2>
+        <div class="kv"><b>会发生什么</b><span>真识别你拍的图/录的音 → 判断你卡在哪 → 给你一张能看懂的解答卡 → 立刻做 3 道自测 → 计划和策略按作答结果变</span></div>
+      </div>
+    </div>
+
+    <!-- 随堂 3 题：讲解完立刻验证，答完才更新计划 -->
+    <div class="card" id="quizCard" style="display:none">
+      <div class="row"><span class="tag"># 随堂 3 题</span><span id="quizMeta"></span></div>
+      <h2 id="quizTitle">先别急着说懂了，做三道</h2>
+      <div class="quizstrat" id="quizStrategy"></div>
+      <div id="quizBody"></div>
+      <div style="display:flex;align-items:center;margin-top:14px">
+        <button class="primary" id="btnSubmitQuiz" style="border:none;border-radius:12px;background:var(--ink);
+                color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:11px 22px;cursor:pointer">
+          交卷
+        </button>
+        <span id="quizResult"></span>
+      </div>
+      <p class="note">交卷后，错误指纹和学习计划会立刻按这次结果重算；正确率 ≤1/3 时，教学策略会当场升版。</p>
+    </div>
+  </div>
+
+  <!-- ===== 图谱 ===== -->
+  <div class="pane" id="p-graph">
+    <div class="graphbar">
+      <span class="gbl">课程子图谱</span>
+      <select id="courseSel"></select>
+      <span class="gbi" id="courseInfo">每门课独立一张，不跨课加载</span>
+      <button class="miniBtn" type="button" onclick="showCross()">跨课程关联</button>
+    </div>
+    <div class="crossbox" id="crossBox" style="display:none"></div>
+    <div class="graphbox">
+      <div class="chips" id="chips"></div>
+      <div class="verbar">图谱版本 <b id="kgVer">v3</b></div>
+      <canvas id="cv"></canvas>
+      <div class="evpanel" id="ev">
+        <h4 id="evTitle" style="margin:0 0 6px;font-size:13px">节点</h4>
+        <div id="evBody"></div>
+      </div>
+      <div class="legend">
+        <div><i style="background:#e6d79a"></i>稳定</div>
+        <div><i style="background:#ffd900"></i>正在重构</div>
+        <div><i style="background:#c8503c"></i>冲突</div>
+      </div>
+    </div>
+    <p class="note">点任意节点，可以看到它的证据（原始语音转写 + 图像识别结果）。</p>
+  </div>
+
+  <!-- ===== 两轮演示 ===== -->
+  <div class="pane" id="p-demo">
+    <div class="card live">
+      <div class="row"><span class="tag"># 两轮演示 · 同一个 10 步闭环</span><span class="dstatus" id="demoStatus">—</span></div>
+      <h2 style="margin-bottom:6px">流程图还是这一张，变的是它<strong>拿什么做判断</strong></h2>
+      <p class="note" id="demoHint">SKG = 每门课自己的静态知识图谱；DPM = 这个学生在这门课上的动态记忆。第一轮 DPM 为空，只能读 SKG。</p>
+      <div class="demo-courses" id="demoCourses"></div>
+      <div class="demo-actions">
+        <button class="primary" id="btnEvolve">注入本节课采集结果 → 完成进化</button>
+        <button class="miniBtn" id="btnFreeze" style="display:none">解冻记忆（允许写入）</button>
+        <button class="miniBtn" id="btnReset">清空课堂记忆（回到第一轮）</button>
+        <span class="state" id="demoState" style="font-size:12.5px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="tag"># DPM · 这个学生在这门课上的记忆</span><span id="dpmState">—</span></div>
+      <details class="foldbox">
+        <summary class="foldsum" id="dpmSummary">—</summary>
+        <div class="dpm-grid">
+          <div class="dpm-col"><h4>Ds · 会话历史</h4><div id="dpmDs"></div></div>
+          <div class="dpm-col"><h4>Dw · 薄弱知识点</h4><div id="dpmDw"></div></div>
+          <div class="dpm-col"><h4>Dr · 引导策略反思</h4><div id="dpmDr"></div></div>
+        </div>
+        <p class="note" id="dpmNote"></p>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="tag"># 十步对比</span><span>左：未进化 · 右：已进化</span></div>
+      <div class="dsteps" id="demoSteps"></div>
+    </div>
+
+    <div class="card" id="evidenceCard">
+      <div class="row"><span class="tag"># 这节课采集到了什么</span><span id="evCount">—</span></div>
+      <details class="foldbox">
+        <summary class="foldsum" id="evSummary">—</summary>
+        <div id="demoEvidence"></div>
+        <div class="dgraph" id="demoGraph"></div>
+        <p class="note" id="demoGraphNote"></p>
+      </details>
+    </div>
+
+    <div class="card">
+      <details class="foldbox" id="rejectedFold">
+        <summary class="foldsum" id="rejectedSummary">被拒收的证据 · 低置信度 / 乱码 / 校验不通过</summary>
+        <div id="rejectedBody"></div>
+      </details>
+    </div>
+
+    <div class="card" id="traceCard">
+      <div class="row"><span class="tag"># 可审计痕迹 · 结论能追到哪一秒</span><span class="dstatus" id="traceState">—</span></div>
+      <details class="foldbox" id="traceFold">
+        <summary class="foldsum" id="traceSummary">—</summary>
+        <p class="note">T1 = 哪门课、哪一堂；T2 = 今天的导学任务和结论；T3 = 每一条原始证据（秒数 / 通道 / 原文）。结论用 <code>ev_id</code> 指向证据 —— 第二轮为什么改，能一路追到某一秒。这里是痕迹分层，和「它怎么变的」里的 L1/L2/L3 自进化层级不是一回事。</p>
+        <div id="traceBody"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <details class="foldbox" id="manualFold">
+        <summary class="foldsum" id="manualSummary">识别不清？人工补录一条课堂卡点（兜底通道，不是自动生成）</summary>
+        <form id="manualForm" class="manual-form">
+          <label>知识点
+            <input id="manKp" type="text" maxlength="20" placeholder="例如：积分 / 极限 / 中值定理">
+          </label>
+          <label>卡在哪里
+            <textarea id="manText" rows="3" maxlength="300"
+                      placeholder="用自己的话说：这一步为什么没懂"></textarea>
+          </label>
+          <div class="demo-actions">
+            <button class="primary" type="submit">补录这一条</button>
+            <span class="state" id="manualState"></span>
+          </div>
+          <p class="note">补录会打上「人工来源」标签，并和已有记忆做冲突检查；矛盾的两条都会留下，等人确认，不自动覆盖。</p>
+        </form>
+      </details>
+    </div>
+
+    <div class="card">
+      <details class="foldbox" id="safetyFold">
+        <summary class="foldsum" id="safetySummary">演示安全网 · 快照回滚 / 记忆冲突</summary>
+        <div id="safetyBody"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="row"><span class="tag"># 系统局限（诚实版）</span><span>对照 RSI 三类失败模式</span></div>
+      <div class="limits">
+        <div class="limit"><b>① 探索不够针对</b>
+          <span>经验主要依赖 VibeCoding / OCR / ASR 的输入质量；系统不能自己生成学习经验，识别失效时只能靠人工补录（来源标记 human_input）。</span></div>
+        <div class="limit"><b>② 验证不完备</b>
+          <span>已有前置校验：格式 + 多模态交叉置信度 + 语义自洽 + 边缘样本 Critic 复核，低置信度只留日志；但校验与主系统共用同一个大模型，仍有自确认风险，独立 Verifier 是未来工作。</span></div>
+        <div class="limit"><b>③ 记忆合并不可靠</b>
+          <span>冲突检测不自动消解（显式修正语境也只做标记），两条都保留、等人确认；合并权重仍是预设规则，更高级的融合策略是未来工作。演示可用快照回滚兜底。</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 进化 ===== -->
+  <div class="pane" id="p-evo">
+    <div class="card">
+      <div class="row"><span class="tag"># 教学方法的变更记录</span><span>可回滚</span></div>
+      <h2 style="margin-bottom:6px">它不是"会自我进化"，是<strong>每次进化都有据可查</strong></h2>
+      <div class="tl" id="timeline"></div>
+      <p class="note">每条都写着：改了什么、为什么改、改完好了多少（样本量 n）、能不能退回去。</p>
+    </div>
+    <div class="card">
+      <div class="row"><span class="tag"># 这些词是什么意思</span><span>人话版</span></div>
+      <div class="gloss" id="gloss"></div>
+    </div>
+    <div class="card" id="diffCard" style="display:none">
+      <div class="row"><span class="tag" id="diffTitle">版本详情</span><span></span></div>
+      <div id="diffBody"></div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- 回看：我的教学 Agent 会话历史（独立弹层，不依赖 tab） -->
+<div class="modal" id="histModal" onclick="if(event.target===this) closeHistory()">
+  <div class="modalbox">
+    <div class="modalhead">
+      <span>回看 · 我的教学记录 <span id="histCount" style="font-weight:400;color:var(--muted);font-size:12px"></span></span>
+      <button type="button" onclick="closeHistory()">×</button>
+    </div>
+    <div class="modalbody" id="histList"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const API = '';                      // 同源；跨域部署时填 http://host:5000
+const STAGES = ['rx','asr','ocr','align','retrieve','judge','patch','guard','commit','evolve'];
+const LABEL = {rx:'接收',asr:'转写',ocr:'识别',align:'对齐',retrieve:'检索',
+               judge:'裁决',patch:'候选',guard:'校验',commit:'提交',evolve:'策略'};
+/* 点进度灯时的人话说明：这盏灯亮起代表系统刚做完哪一步 */
+const STAGE_DESC = {
+  rx: '收到你这次上传的照片 / 录音 / 文字。',
+  asr: '把课堂录音转成文字。转写不可靠时，来源会打低置信度，只留日志。',
+  ocr: '把板书照片识别成文字和公式。',
+  align: '把识别出来的内容对齐到这门课的知识点。',
+  retrieve: '在这门课的知识图谱里找相关的节点和前置知识。',
+  judge: '判断新内容和你已有的记忆是否冲突，冲突不会自动覆盖。',
+  patch: '生成准备加入图谱的候选修改。',
+  guard: '检查证据够不够支撑这条修改，不够就不写。',
+  commit: '真正写进知识图谱，版本号 +1。',
+  evolve: '根据这次结果更新教学策略，并留下可回滚的记录。',
+};
+
+/* 教学策略的“人话版”：时间线里不能只甩内部名字 */
+const STRATEGY_HUMAN = {
+  '反例优先': '先给你一个错解，让你自己指出错在哪',
+  '拆成两步的变式题': '先带你做第一步，第二步留给你，再换一道变式题',
+  '数形结合': '画图 / 数轴，把抽象关系画出来',
+  '先给思路不给答案': '只给方向，不直接给答案',
+  '检查清单': '做完按清单逐项核对',
+  '降难度成功体验': '先做一道简单必对题，再做原题',
+};
+let SESSION_ID = null;
+let COURSE_ID = 'math';
+
+/* ---------- 标签页 ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on'); $(t.dataset.pane).classList.add('on');
+    if(t.dataset.pane==='p-graph'){ resizeCanvas(); layout(true); }
+    loadDigest();
+  };
+});
+
+(function(){
+  var h = location.protocol + '//' + location.hostname;
+  var a = document.getElementById('chatLink');
+  if(a) a.href = h + ':5173/#/agent';
+})();
+
+/* ---------- 计划 / 画像 ---------- */
+let HERO_LOCKED = false;            // 本次采集有自己的主题时，别被历史计划覆盖
+let LAST_OCR = '', LAST_ASR = '';
+
+function setHero(kp, typ, text){
+  if(!kp) return;
+  if(text && String(text).startsWith('（')) text = '';
+  HERO_LOCKED = true;
+  $('planTitle').textContent = `这次先解决：${kp} 的${typ || '问题'}`;
+  $('planReason').textContent = `来自你刚刚上传的内容：${text || '（已识别）'}`;
+  $('planMeta').textContent = '本次采集 · 讲解 + 3 道自测';
+}
+
+function loadPlan(){
+  if(HERO_LOCKED) return Promise.resolve();
+  return fetch(API+'/api/teach/plan').then(r=>r.json()).then(d=>{
+    if(HERO_LOCKED) return;
+    $('planTitle').textContent = d.title;
+    $('planReason').textContent = d.reason;
+    $('planMeta').textContent = `约 ${d.duration_min} 分钟 · ${d.items.length} 个练习`;
+  }).catch(()=>{
+    $('planTitle').textContent = '后端未启动';
+    $('planReason').textContent = '先运行 python server.py，再刷新这个页面';
+  });
+}
+
+function loadProfile(){
+  return fetch(API+'/api/teach/profile').then(r=>r.json()).then(d=>{
+    $('planStudent').textContent = `${d.student.name} · ${d.student.stage} · 距考试 ${d.student.days_left} 天`;
+    if(d.solo) renderSolo(d.solo);
+    if(d.baseline){
+      $('soloNote').textContent = '冷启动演示基线：' + ($('soloNote').textContent || '')
+        + '（上传并交卷后，会替换成你的真实作答）';
+    }
+  }).catch(()=>{});
+}
+
+const SOLO_LEVELS = [
+  [5, '拓展抽象', '能够迁移、归纳、创造，用到陌生场景'],
+  [4, '关联结构', '能够整合知识，建立完整的逻辑结构'],
+  [3, '多点结构', '知道很多点，但还没串起来'],
+  [2, '单点结构', '只理解一个关键方面，比较片面'],
+  [1, '前结构', '尚未形成有效理解，方向可能就错了'],
+];
+
+function renderSolo(s){
+  $('solo').innerHTML = SOLO_LEVELS.map(([lv, nm, ds])=>{
+    const cls = lv === s.current ? 'cur' : (lv === s.target ? 'tgt' : '');
+    const flag = lv === s.current ? '<span class="flag">你现在</span>'
+               : (lv === s.target ? '<span class="flag">下一步</span>' : '');
+    return `<div class="lv ${cls}">
+      <div class="num">${lv}</div>
+      <div><div class="nm">${nm}</div><div class="ds">${ds}</div></div>${flag}</div>`;
+  }).join('');
+  $('soloNote').textContent = s.evidence;
+}
+loadPlan(); loadProfile();
+
+/* ---------- 图谱 ---------- */
+const cv = $('cv'), ctx = cv.getContext('2d');
+let G = {version:0,nodes:[],edges:[]}, pos = {}, anim = {};
+
+function resizeCanvas(){
+  const r = cv.parentElement.getBoundingClientRect();
+  if(r.width>10 && r.height>10){ cv.width = r.width; cv.height = r.height; }
+}
+function layout(force){
+  const cx = cv.width/2, cy = cv.height/2;
+  const list = G.nodes.filter(n=>n.id!=='root');
+  G.nodes.forEach(n=>{
+    if(pos[n.id] && !force) return;
+    if(n.id==='root'){ pos[n.id]={x:cx,y:cy}; return; }
+    const i = list.indexOf(n), k = Math.max(1,list.length);
+    const ang = i/k*Math.PI*2 - Math.PI/2;
+    const rad = Math.min(cv.width, cv.height)*0.30;
+    pos[n.id] = {x: cx+Math.cos(ang)*rad*1.45, y: cy+Math.sin(ang)*rad};
+  });
+  G.nodes.forEach(n=>{ if(!anim[n.id]) anim[n.id]={x:pos[n.id].x,y:pos[n.id].y,r:0,a:0}; });
+}
+const colorOf = st => st==='conflict' ? '#c8503c' : st==='pending' ? '#ffd900' : '#e6d79a';
+
+function draw(t){
+  requestAnimationFrame(draw);
+  if(cv.width<10) return;
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // 淡网格
+  ctx.strokeStyle='rgba(36,36,27,.045)'; ctx.lineWidth=1;
+  for(let x=0;x<cv.width;x+=44){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+  for(let y=0;y<cv.height;y+=44){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+
+  G.edges.forEach(e=>{
+    const a=anim[e.from], b=anim[e.to]; if(!a||!b) return;
+    const mx=(a.x+b.x)/2+Math.sin(t/900+a.x)*7, my=(a.y+b.y)/2+Math.cos(t/1100+a.y)*7;
+    ctx.strokeStyle='#dcdccf'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(mx,my,b.x,b.y); ctx.stroke();
+  });
+
+  G.nodes.forEach(nd=>{
+    const p = pos[nd.id] || {x:cv.width/2,y:cv.height/2};
+    const a = anim[nd.id] || (anim[nd.id]={x:p.x,y:p.y,r:0,a:0});
+    a.x += (p.x-a.x)*0.08; a.y += (p.y-a.y)*0.08; a.a += (1-a.a)*0.06 || .01;
+    const target = nd.id==='root'?30:21;
+    a.r += (target-a.r)*0.08;
+
+    const conflict = nd.status==='conflict';
+    const pulse = conflict ? 1+0.12*Math.sin(t/200) : 1;
+
+    ctx.globalAlpha = a.a*0.55;
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*1.9*pulse,0,Math.PI*2);
+    ctx.fillStyle = conflict ? 'rgba(200,80,60,.10)' : 'rgba(255,217,0,.16)';
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r*(conflict?pulse:1),0,Math.PI*2);
+    ctx.fillStyle = colorOf(nd.status); ctx.fill();
+    ctx.strokeStyle = conflict ? '#c8503c' : '#24241b';
+    ctx.lineWidth = 1.4; ctx.stroke();
+
+    ctx.fillStyle='#24241b';
+    ctx.font='12px Inter,"PingFang SC",sans-serif'; ctx.textAlign='center';
+    ctx.fillText(nd.label, a.x, a.y+a.r+17);
+    if(nd.conf!==undefined){
+      ctx.fillStyle='#a3a396'; ctx.font='10px ui-monospace,Consolas';
+      ctx.fillText(nd.conf.toFixed(2), a.x, a.y+a.r+30);
+    }
+  });
+}
+requestAnimationFrame(draw);
+window.addEventListener('resize', ()=>{ resizeCanvas(); layout(true); });
+
+/* ---------- 解答卡 ---------- */
+let liveCard = null;
+const now = ()=> new Date().toLocaleTimeString('zh-CN',{hour12:false});
+
+function newLiveCard(){
+  const el = document.createElement('div');
+  el.className = 'card live';
+  el.innerHTML = `
+    <div class="row"><span class="tag"># 正在解析</span><span>${now()}</span></div>
+    <h2 class="t">正在解析…</h2>
+    <div class="kv"><b>语音转写</b><span class="asr wait">等待中…</span></div>
+    <div class="kv"><b>图像识别</b><span class="ocr wait">等待中…</span></div>
+    <div class="conclusion" style="display:none"></div>
+    <ol class="steps" style="display:none"></ol>
+    <div class="foot"><span class="ver"></span><span class="strat"></span></div>`;
+  $('cards').prepend(el);
+  return el;
+}
+
+function fill(stage, p){
+  if(!liveCard) return;
+  const q = s => liveCard.querySelector(s);
+  if(stage==='asr'){ q('.asr').textContent=p.text; q('.asr').classList.remove('wait'); }
+  if(stage==='ocr'){ q('.ocr').textContent=p.text; q('.ocr').classList.remove('wait'); }
+  if(stage==='judge') q('.t').textContent = p.conflict ? '发现一处冲突，正在修正知识库' : '和记忆里的理解一致';
+  if(stage==='commit') q('.ver').innerHTML = `<span class="pill">知识图谱 → v${p.version}</span>`;
+  if(stage==='answer'){
+    q('.t').textContent = '解析完成';
+    const c = q('.conclusion'); c.style.display='block'; c.textContent = p.conclusion||'';
+    const ol = q('.steps'); ol.style.display='block'; ol.innerHTML='';
+    (p.steps||[]).forEach(s=>{ const li=document.createElement('li'); li.textContent=s; ol.appendChild(li); });
+    q('.strat').textContent = '本次策略：'+(p.strategy||'—') + (p.policy ? ' · UCB 选择' : '');
+  }
+}
+
+/* ---------- 进化日志 ---------- */
+let VERSIONS = [], ACTIVE = null;
+
+function renderTimeline(){
+  $('timeline').innerHTML = VERSIONS.map(v=>{
+    const isA = v.id===ACTIVE;
+    const isInfo = v.status==='info' || v.kind==='knowledge';
+    const isBaseline = v.kind==='strategy' && v.id==='v1' && !v.metrics;
+    const human = !isInfo && v.strategy && STRATEGY_HUMAN[v.strategy]
+      ? `<div class="m"><span class="k">人话：</span>${STRATEGY_HUMAN[v.strategy]}</div>` : '';
+    const m = isInfo
+      ? `<div class="m"><span class="k">证据：</span>本次采集的原始文本已挂到节点，可点开看</div>`
+      : v.metrics
+        ? (v.metrics.new == null
+           ? `<div class="m"><span class="k">证据：</span>本场自测后切换，n=${v.metrics.n}；新策略还没复测，所以标“待验证”</div>`
+           : `<div class="m"><span class="k">证据：</span>二次正确率 ${(v.metrics.old*100).toFixed(0)}% → <b>${(v.metrics.new*100).toFixed(0)}%</b>　<span class="k">n=${v.metrics.n}</span></div>`)
+        : `<div class="m"><span class="k">证据：</span>无（还没有作答数据，不是历史成绩）</div>`;
+    const badge = isInfo
+      ? '<span class="badge">知识更新</span>'
+      : isBaseline ? '<span class="badge">冷启动基线</span>'
+      : (isA ? '<span class="badge now">当前线上</span>' : '<span class="badge">已归档</span>');
+    return `<div class="ver ${isA?'active':''}">
+      <div class="h">
+        <span class="vid">${v.id}</span>
+        <span class="title">${v.title}</span>
+        ${badge}
+        <span class="time">${v.time}</span>
+      </div>
+      <div class="m"><span class="k">理由：</span>${v.reason}</div>
+      ${human}
+      ${m}
+      <div class="acts">
+        <button onclick="showDiff('${v.id}')">查看 diff</button>
+        ${v.kind==='strategy' && (isA||isBaseline) ? `<button class="p" onclick="retryQuiz('${v.id}')">用这个讲法再测 3 题</button>` : ''}
+        ${isInfo || isA || isBaseline ? '' : `<button class="p" onclick="rollback('${v.id}')">回滚到这里</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showDiff(id){
+  const v = VERSIONS.find(x=>x.id===id); if(!v) return;
+  let bars = '';
+  if(v.metrics){
+    const o=(v.metrics.old*100).toFixed(0);
+    const nv = v.metrics.new;
+    const n = nv!=null ? (nv*100).toFixed(0) : '待验证';
+    bars = `<div class="bars">
+      <div class="bw"><span class="lb">旧</span><span class="b" style="width:${o*3}px"></span><span>${o}%</span></div>
+      <div class="bw"><span class="lb">新</span><span class="b new" style="width:${nv!=null?n*3:0}px"></span><span><b>${n}${nv!=null?'%':''}</b></span></div>
+      <div class="note">${nv!=null ? `同批历史错题 n=${v.metrics.n}` : `本次自测 n=${v.metrics.n}；点「用这个讲法再测 3 题」验证新策略`}</div></div>`;
+  }
+  $('diffCard').style.display='block';
+  $('diffTitle').textContent = `${v.id} · ${v.title}`;
+  $('diffBody').innerHTML = `
+    <div class="diff">
+      ${(v.diff.ctx||[]).map(l=>`<span class="l ctx">  ${l}</span>`).join('')}
+      ${(v.diff.del||[]).map(l=>`<span class="l del">- ${l}</span>`).join('')}
+      ${(v.diff.add||[]).map(l=>`<span class="l add">+ ${l}</span>`).join('')}
+    </div>${bars}`;
+  $('diffCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+async function rollback(id){
+  const r = await fetch(API+'/api/teach/evolution/'+id+'/rollback',{method:'POST'});
+  const d = await r.json();
+  if(d.ok){ ACTIVE = d.active; renderTimeline(); }
+}
+
+/* 策略切换后：不重新拍照，直接用同一错因再出 3 题验证新讲法 */
+async function retryQuiz(vid){
+  if(!SESSION_ID){
+    alert('先上传一道题并交卷，系统才有这个错因可以做复测。');
+    return;
+  }
+  try{
+    const r = await fetch(API+'/api/teach/quiz/retry', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: SESSION_ID, version: vid})
+    });
+    const d = await r.json();
+    if(!d.ok) throw new Error(d.error || '复测失败');
+    document.querySelector('.tab[data-pane="p-answer"]').click();
+    renderQuiz({session_id: d.session_id, error_type: d.error_type,
+                kp: d.kp, strategy: d.strategy, items: d.items});
+    $('planTitle').textContent = `复测：${d.kp} 的${d.error_type}`;
+    $('planReason').textContent = `这次用新讲法：${STRATEGY_HUMAN[d.strategy] || d.strategy}`;
+    $('planMeta').textContent = `复测 ${vid} · 3 题`;
+    $('capState').textContent = '复测模式：不用重新拍照，直接做 3 题验证新策略。';
+    $('quizCard').scrollIntoView({behavior:'smooth', block:'center'});
+  }catch(e){
+    alert('复测失败：' + e.message);
+  }
+}
+
+function loadVersions(){
+  fetch(API+'/api/teach/evolution').then(r=>r.json()).then(d=>{
+    VERSIONS = d.versions; ACTIVE = d.active; renderTimeline();
+  }).catch(()=>{});
+}
+
+/* ---------- 事件（SSE） ---------- */
+let lastId = 0;
+function setChip(stage, ok){
+  const box=$('chips');
+  if(!box.children.length) box.innerHTML = STAGES.map(s=>`<span class="chip" data-s="${s}">${LABEL[s]}</span>`).join('');
+  [...box.children].forEach(c=>{ if(c.classList.contains('now')) c.className='chip done'; });
+  const el=box.querySelector(`[data-s="${stage}"]`);
+  if(el) el.className = 'chip ' + (ok===false?'bad':'now');
+}
+
+/* 进度灯不是按钮，但点它可以看“这一步在做什么、现在到哪了” */
+$('chips').addEventListener('click', e=>{
+  const c = e.target.closest('.chip');
+  if(!c) return;
+  const s = c.dataset.s;
+  const st = c.classList.contains('done') ? '已完成'
+           : c.classList.contains('bad') ? '未通过'
+           : c.classList.contains('now') ? '进行中' : '等待中';
+  $('evTitle').textContent = `${LABEL[s] || s} · ${st}`;
+  $('evBody').innerHTML = `<p class="note">${STAGE_DESC[s] || '这一步没有说明。'}</p>`;
+  $('ev').classList.add('show');
+});
+
+function applyGraph(snap){
+  if(!snap) return;
+  G = snap;
+  if(snap.course_id){
+    COURSE_ID = snap.course_id;
+    if($('courseSel')) $('courseSel').value = snap.course_id;
+    if($('courseInfo')) $('courseInfo').textContent =
+      `只看「${snap.course_name || snap.course_id}」子图 v${snap.version}；切课不会串`;
+  }
+  $('kgVer').textContent = 'v'+snap.version; layout(false);
+}
+
+function loadCourses(){
+  fetch(API+'/api/teach/courses').then(r=>r.json()).then(d=>{
+    const cs = d.courses || [];
+    if(!cs.length) return;
+    $('courseSel').innerHTML = cs.map(c=>
+      `<option value="${c.id}">${c.name} · ${c.type}</option>`).join('');
+    $('courseSel').value = COURSE_ID;
+  }).catch(()=>{});
+}
+
+async function switchCourse(cid){
+  if(!cid) return;
+  COURSE_ID = cid;
+  try{
+    const r = await fetch(API+'/api/teach/subgraph/'+encodeURIComponent(cid));
+    const snap = await r.json();
+    applyGraph(snap);
+  }catch(e){}
+}
+
+async function showCross(){
+  try{
+    const r = await fetch(API+'/api/teach/cross/'+encodeURIComponent(COURSE_ID));
+    const d = await r.json();
+    const links = d.links || [];
+    const box = $('crossBox');
+    box.style.display = 'block';
+    box.innerHTML = links.length
+      ? `<b>跨课程关联（手动触发，不自动融合）</b><br>` + links.map(x=>
+          `「${x.from_label}」↔「${x.to_label}」：${x.reason}`).join('<br>')
+      : '这门课暂时没有配置跨课程关联。默认只在本课程内进化。';
+  }catch(e){}
+}
+
+function handle(ev){
+  if(ev.id && ev.id<=lastId) return;
+  if(ev.id) lastId = ev.id;
+  const p = ev.payload||{};
+
+  if(ev.stage==='rx') liveCard = newLiveCard();
+  if(ev.stage==='course'){
+    COURSE_ID = p.id || COURSE_ID;
+    if($('courseSel')) $('courseSel').value = COURSE_ID;
+    if($('courseInfo')) $('courseInfo').textContent =
+      `识别为：${p.name}（${p.type}）· ${p.reason || ''}`;
+    loadNextAction();
+  }
+  if(ev.stage==='verify'){
+    const st = p.status || 'UNVERIFIED';
+    const el = $('verifyState');
+    el.textContent = '证据校验：' + st;
+    el.className = 'vstate ' + (st === 'PASS' ? 'ok' : st === 'FAIL' ? 'bad' : 'warn');
+    if(st !== 'PASS'){
+      HERO_LOCKED = true;
+      $('planTitle').textContent = '证据校验未通过：先重拍 / 重说';
+      $('planReason').textContent = (p.reasons || []).join('；') || '识别文本可能有问题，暂不写入图谱。';
+      $('planMeta').textContent = '这次不会出题，也不会更新知识图谱';
+    }
+  }
+  if(ev.stage==='asr'){ setChip('asr'); LAST_ASR = p.text || ''; }
+  if(ev.stage==='ocr'){ setChip('ocr'); LAST_OCR = p.text || ''; }
+  if(ev.stage==='align') setChip('align');
+  if(ev.stage==='retrieve') setChip('retrieve');
+  if(ev.stage==='judge'){
+    setChip('judge');
+    G.nodes.forEach(n=>{ if(n.id===p.node_id) n.status = p.conflict?'conflict':'stable'; });
+  }
+  if(ev.stage==='patch') setChip('patch');
+  if(ev.stage==='guard') setChip('guard', p.pass);
+  if(ev.stage==='commit'){ setChip('commit'); applyGraph(p.graph); loadVersions(); }
+  if(ev.stage==='noop'){ loadVersions(); }
+  if(ev.stage==='quiz'){ setHero(p.kp, p.error_type, LAST_OCR || LAST_ASR); renderQuiz(p); loadNextAction(); }
+  if(ev.stage==='evolve'){ setChip('evolve'); setBusy(false); }
+  if(ev.stage==='answer'){
+    setBusy(false);
+    setHero(p.kp, p.error_type, (p.ocr || '') && !p.ocr.startsWith('（') ? p.ocr : (p.asr || LAST_OCR || LAST_ASR));
+    loadVersions(); loadNextAction();
+  }
+
+  fill(ev.stage, p);
+}
+
+function connect(){
+  try{
+    const es = new EventSource(API+'/api/teach/stream');
+    es.onmessage = e=>{
+      const d = JSON.parse(e.data);
+      if(d.type==='hello'){
+        if(d.active_course) COURSE_ID = d.active_course;
+        loadCourses();
+        applyGraph(d.graph);
+        if(d.versions){ VERSIONS=d.versions; ACTIVE=(d.versions.find(v=>v.status==='active')||{}).id; renderTimeline(); }
+      } else handle(d);
+    };
+    es.onerror = ()=>{ /* 浏览器会自动重连 */ };
+  }catch(e){}
+}
+
+/* ---------- 现场采集：拍照 / 录音 / 打字 ---------- */
+let imgFile = null, audioBlob = null;
+let mediaStream = null, audioCtx = null, recSrc = null, recProc = null, recChunks = [], recording = false;
+
+$('fImg').onchange = e => {
+  imgFile = e.target.files && e.target.files[0] || null;
+  $('imgName').textContent = imgFile ? `${imgFile.name}（${(imgFile.size/1024).toFixed(0)} KB）` : '点一下拍照，或从相册选';
+  $('imgBox').style.borderColor = imgFile ? 'var(--green)' : '';
+};
+
+$('fAud').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  audioBlob = f;
+  $('audFile').style.display = 'block';
+  $('audFile').textContent = `已选：${f.name}（${(f.size/1024).toFixed(0)} KB）`;
+  $('audBox').style.borderColor = 'var(--green)';
+  $('recState').textContent = '使用上传的录音文件';
+};
+
+// 局域网 HTTP 下浏览器会隐藏 navigator.mediaDevices：录音按钮换成上传文件
+if(!window.isSecureContext){
+  $('btnRec').style.display = 'none';
+  $('recState').textContent = '当前地址不能开麦；点下面「或上传录音文件」即可';
+}
+
+function wavString(view, off, s){
+  for(let i=0;i<s.length;i++) view.setUint8(off+i, s.charCodeAt(i));
+}
+
+function encodeWav(chunks, srcRate){
+  let len = 0; chunks.forEach(c=>len += c.length);
+  const data = new Float32Array(len);
+  let p = 0; chunks.forEach(c=>{ data.set(c, p); p += c.length; });
+
+  const dstRate = 16000;                       // ASR 统一 16k 单声道
+  const ratio = (srcRate || 48000) / dstRate;
+  const outLen = Math.max(1, Math.floor(len / ratio));
+  const pcm = new Int16Array(outLen);
+  for(let i=0;i<outLen;i++){
+    const idx = i * ratio, i0 = Math.floor(idx), i1 = Math.min(i0+1, len-1);
+    const frac = idx - i0;
+    const s = (data[i0] || 0) * (1-frac) + (data[i1] || 0) * frac;
+    pcm[i] = Math.max(-1, Math.min(1, s)) * 0x7FFF;
+  }
+  const buf = new ArrayBuffer(44 + outLen*2), v = new DataView(buf);
+  wavString(v, 0, 'RIFF'); v.setUint32(4, 36 + outLen*2, true);
+  wavString(v, 8, 'WAVE'); wavString(v, 12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, dstRate, true); v.setUint32(28, dstRate*2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  wavString(v, 36, 'data'); v.setUint32(40, outLen*2, true);
+  new Int16Array(buf, 44).set(pcm);
+  return buf;
+}
+
+async function startRec(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    $('recState').textContent = '这个地址不允许麦克风：请用 http://127.0.0.1:5001/teach 打开，或点「上传录音」';
+    return;
+  }
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:{
+      channelCount:1, echoCancellation:true, noiseSuppression:true}});
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    recSrc = audioCtx.createMediaStreamSource(mediaStream);
+    recProc = audioCtx.createScriptProcessor(4096, 1, 1);
+    const mute = audioCtx.createGain(); mute.gain.value = 0;
+    recChunks = []; recording = true;
+    recProc.onaudioprocess = e => {
+      if(recording) recChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    };
+    recSrc.connect(recProc); recProc.connect(mute); mute.connect(audioCtx.destination);
+    audioBlob = null;
+    $('audFile').style.display = 'none';
+    $('btnRec').classList.add('rec');
+    $('btnRec').textContent = '停止录音';
+    $('recState').textContent = '正在录… 说完再点一下结束';
+  }catch(e){
+    $('recState').textContent = '麦克风打不开：' + e.message + '（可改用上传录音文件）';
+  }
+}
+
+function stopRec(){
+  if(!recording) return;
+  recording = false;
+  try{ recProc.disconnect(); recSrc.disconnect(); }catch(e){}
+  if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
+  const rate = audioCtx ? audioCtx.sampleRate : 48000;
+  const wav = encodeWav(recChunks, rate);
+  audioBlob = new Blob([wav], {type:'audio/wav'});
+  if(audioCtx) audioCtx.close();
+  audioCtx = null;
+  $('btnRec').classList.remove('rec');
+  $('btnRec').textContent = '重新录音';
+  $('recState').textContent = `已录 ${(audioBlob.size/1024).toFixed(0)} KB，再点可重录`;
+}
+
+$('btnRec').onclick = ()=> recording ? stopRec() : startRec();
+
+function setBusy(b){
+  $('btnAnalyze').disabled = b;
+  $('btnStart').disabled = b;
+}
+
+async function analyze(){
+  const text = $('txtQ').value.trim();
+  if(!imgFile && !audioBlob && !text){
+    $('capState').textContent = '先拍一张，或者说一句，或者打一行字——至少给一个。';
+    return;
+  }
+  if(recording) stopRec();
+  setBusy(true);
+  HERO_LOCKED = false; LAST_OCR = ''; LAST_ASR = '';
+  $('chips').innerHTML = '';
+  $('quizCard').style.display = 'none';
+  $('capState').textContent = '上传中…';
+  const fd = new FormData();
+  fd.append('device_id', 'teach-page');
+  if(imgFile) fd.append('image', imgFile);
+  if(audioBlob) fd.append('audio', audioBlob, audioBlob.name || 'ask.wav');
+  if(text) fd.append('text', text);
+  try{
+    const r = await fetch(API+'/api/teach/ingest', {method:'POST', body:fd});
+    const d = await r.json();
+    if(!d.ok) throw new Error(d.error || '上传失败');
+    $('capState').textContent = '已收到，正在识别…（第一次加载模型可能要十几秒）';
+  }catch(e){
+    $('capState').textContent = '失败：' + e.message + '（后端起了吗？）';
+    setBusy(false);
+  }
+}
+
+$('btnStart').onclick = analyze;
+$('btnAnalyze').onclick = analyze;
+
+/* ---------- 随堂 3 题 ---------- */
+let QUIZ = null, QUIZ_PICK = {}, QUIZ_DONE = false;
+
+function renderQuiz(p){
+  QUIZ = p; QUIZ_PICK = {}; QUIZ_DONE = false;
+  SESSION_ID = p.session_id || SESSION_ID;
+  setBusy(false);
+  setHero(p.kp, p.error_type, LAST_OCR || LAST_ASR);
+  const st = p.strategy || '';
+  const pol = p.policy && p.policy.reason ? ` · ${p.policy.reason}` : '';
+  $('quizStrategy').innerHTML = st
+    ? `当前讲法：<b>${st}</b> —— ${STRATEGY_HUMAN[st] || '按这个策略带你做'}${pol}`
+    : '';
+  $('capState').textContent = '解析完成。先做这 3 道，系统才知道你会不会。';
+  $('quizCard').style.display = 'block';
+  $('quizMeta').textContent = `${p.error_type} · ${p.kp}`;
+  $('quizTitle').textContent = '先别急着说懂了，做三道';
+  $('quizResult').textContent = '';
+  $('btnSubmitQuiz').disabled = false;
+  $('btnSubmitQuiz').style.display = '';
+  const items = p.items || [];
+  $('quizBody').innerHTML = items.map((it, qi)=>`
+    <div class="q" data-q="${qi}">
+      <div class="qt">${qi+1}. ${it.q}</div>
+      <div class="opts">
+        ${it.options.map((o, oi)=>`
+          <button class="opt" type="button" data-qi="${qi}" data-oi="${oi}">${o}</button>`).join('')}
+      </div>
+      <div class="why" style="display:none"></div>
+    </div>`).join('');
+  $('quizBody').querySelectorAll('.opt').forEach(btn=>{
+    btn.onclick = ()=>{
+      if(QUIZ_DONE) return;
+      const qi = +btn.dataset.qi;
+      QUIZ_PICK[qi] = +btn.dataset.oi;
+      const box = btn.closest('.q');
+      box.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+      btn.classList.add('sel');
+    };
+  });
+  $('quizCard').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+$('btnSubmitQuiz').onclick = async ()=>{
+  if(!QUIZ || QUIZ_DONE) return;
+  const items = QUIZ.items || [];
+  if(Object.keys(QUIZ_PICK).length < items.length){
+    $('quizResult').textContent = '还有题没选。';
+    return;
+  }
+  QUIZ_DONE = true;
+  $('btnSubmitQuiz').disabled = true;
+  $('quizResult').textContent = '判分中…';
+  const answers = items.map((_, i)=> QUIZ_PICK[i]);
+  try{
+    const r = await fetch(API+'/api/teach/quiz/answer', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: QUIZ.session_id, answers})
+    });
+    const d = await r.json();
+    if(!d.ok) throw new Error(d.error || '判分失败');
+    (d.results || []).forEach((res, qi)=>{
+      const box = $('quizBody').querySelector(`.q[data-q="${qi}"]`);
+      if(!box) return;
+      box.querySelectorAll('.opt').forEach(opt=>{
+        const oi = +opt.dataset.oi;
+        opt.disabled = true;
+        opt.classList.remove('sel');
+        if(oi === res.answer) opt.classList.add('ok');
+        else if(oi === res.chosen) opt.classList.add('bad');
+      });
+      const why = box.querySelector('.why');
+      why.style.display = 'block';
+      why.textContent = (res.correct ? '✓ 对了。' : '✗ ') + res.why;
+    });
+    const evo = d.evolved
+      ? `<span class="quizbad">策略已升到 ${d.evolved}</span>（本场正确率太低，已切换到更合适的讲法；可在「它怎么变的」里回滚）`
+      : '<span class="quizok">策略保持</span>（这次结果已记入错误指纹）';
+    $('quizResult').innerHTML = `对了 <b>${d.correct}/${d.total}</b> 道 · ${evo}`;
+    $('btnSubmitQuiz').style.display = 'none';
+    $('planReason').textContent = `本次自测 ${d.correct}/${d.total}；`
+      + (d.evolved ? `策略已切到 ${d.evolved}，` : '策略保持，')
+      + '错误指纹和明天计划已按这次结果更新。';
+    $('planMeta').textContent = '本次采集 · 已记录到错误指纹';
+    loadProfile(); loadVersions(); loadNextAction();
+  }catch(e){
+    QUIZ_DONE = false;
+    $('btnSubmitQuiz').disabled = false;
+    $('quizResult').textContent = '判分失败：' + e.message;
+  }
+};
+
+/* ---------- 点节点看证据 ---------- */
+cv.addEventListener('click', e=>{
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const hit = G.nodes.find(n=>{ const a=anim[n.id]; return a && Math.hypot(a.x-mx,a.y-my)<(a.r||22)+6; });
+  const box=$('ev');
+  if(hit){
+    const ev = (hit.evidence&&hit.evidence.length)? hit.evidence[hit.evidence.length-1] : null;
+    $('evTitle').textContent = hit.label;
+    $('evBody').innerHTML = `
+      <div><span class="k">状态：</span>${hit.status}　<span class="k">置信度：</span>${(hit.conf??0).toFixed(2)}</div>
+      <div><span class="k">出现：</span>${hit.seen||0} 次${hit.last_seen ? ' · 最近 '+new Date(hit.last_seen*1000).toLocaleString('zh-CN') : ''}</div>
+      <div style="margin-top:6px"><span class="k">证据 · 语音：</span>${ev?ev.asr:'—'}</div>
+      <div><span class="k">证据 · 图像：</span>${ev?ev.ocr:'—'}</div>`;
+    box.classList.add('show');
+  } else box.classList.remove('show');
+});
+
+/* ---------- 回看：我的教学 Agent 会话历史 ---------- */
+const fmtTime = ts => ts ? new Date(ts*1000).toLocaleString('zh-CN', {
+  month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'
+}) : '—';
+
+function loadHistory(){
+  fetch(API+'/api/teach/sessions?limit=30').then(r=>r.json()).then(d=>{
+    const items = d.items || [];
+    $('histCount').textContent = items.length ? `${items.length} 条` : '还没有记录';
+    if(!items.length){
+      $('histList').innerHTML = '<div class="empty">还没有记录。按一次手表按钮，或拍一张板书。</div>';
+      return;
+    }
+    $('histList').innerHTML = items.map(s=>`
+      <div class="hist">
+        <div class="histh">
+          <b>${s.course_name ? s.course_name + ' · ' : ''}${s.kp || '—'} · ${s.error_type || '—'}${s.verification && s.verification !== 'PASS' ? ' · ' + s.verification : ''}</b>
+          <span>${fmtTime(s.ts)} · 自测 ${s.correct || 0}/${s.total || 0}</span>
+        </div>
+        <div class="histq">${(s.asr || s.ocr || '（没有识别文本）').slice(0, 140)}</div>
+        <div class="histc">${(s.conclusion || '').slice(0, 180)}</div>
+      </div>`).join('');
+  }).catch(()=>{
+    $('histList').innerHTML = '<div class="empty">读取失败：后端 5001 起了吗？</div>';
+  });
+}
+
+function showHistory(){
+  $('histModal').classList.add('show');
+  loadHistory();
+}
+
+/* ---------- L3：下一步建议 ---------- */
+let NEXT = null;
+
+function loadNextAction(){
+  fetch(API+'/api/teach/next-action?course_id='+encodeURIComponent(COURSE_ID))
+    .then(r=>r.json()).then(d=>{
+      if(!d || !d.action){ $('nextActionCard').style.display = 'none'; return; }
+      NEXT = d;
+      $('nextActionCard').style.display = 'block';
+      $('naCourse').textContent = d.course_id || '';
+      $('naLabel').textContent = d.label || d.action;
+      $('naReason').textContent = d.reason || '';
+      $('naBtn').textContent = d.label || '去做';
+    }).catch(()=>{});
+}
+
+function doNextAction(){
+  if(!NEXT) return;
+  if(NEXT.action === 'probe_quiz'){
+    if(QUIZ && !QUIZ_DONE && $('quizCard').style.display !== 'none'){
+      document.querySelector('.tab[data-pane="p-answer"]').click();
+      $('quizCard').scrollIntoView({behavior:'smooth', block:'center'});
+    } else if(SESSION_ID){
+      retryQuiz('auto');
+    } else {
+      $('txtQ').focus();
+    }
+    return;
+  }
+  if(NEXT.action === 'review_prereq'){
+    document.querySelector('.tab[data-pane="p-graph"]').click();
+    $('courseInfo').textContent = '补前置：' + (NEXT.target_label || NEXT.target || '');
+    return;
+  }
+  if(NEXT.action === 'cross_course'){
+    document.querySelector('.tab[data-pane="p-graph"]').click();
+    showCross();
+    return;
+  }
+  // capture_more / new_lecture
+  document.querySelector('.tab[data-pane="p-answer"]').click();
+  $('txtQ').focus();
+  $('imgBox').scrollIntoView({behavior:'smooth', block:'center'});
+}
+$('naBtn').onclick = doNextAction;
+
+function closeHistory(){
+  $('histModal').classList.remove('show');
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') closeHistory();
+});
+
+/* ---------- 两轮演示：同一个闭环，两种判断依据 ---------- */
+let DEMO_COURSE = 'math';
+let DEMO_DATA = null;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function loadDemoCourses(){
+  fetch(API+'/api/teach/courses').then(r=>r.json()).then(d=>{
+    const cs = d.courses || [];
+    $('demoCourses').innerHTML = cs.map(c=>`
+      <button class="dcourse ${c.id===DEMO_COURSE?'on':''}" data-cid="${c.id}">
+        ${esc(c.name)}<span class="n">${c.evidence||0}</span></button>`).join('');
+    $('demoCourses').querySelectorAll('.dcourse').forEach(b=>{
+      b.onclick = ()=>{ DEMO_COURSE = b.dataset.cid; loadDemoCourses(); loadDemo(); };
+    });
+  }).catch(()=>{});
+}
+
+function loadDemo(){
+  fetch(API+'/api/teach/compare?course_id='+encodeURIComponent(DEMO_COURSE))
+    .then(r=>r.json()).then(d=>{ DEMO_DATA = d; renderDemo(d); })
+    .catch(()=>{ $('demoSteps').innerHTML = '<p class="note">读取失败：后端起了吗？</p>'; });
+}
+
+function renderDPM(dpm, courseName, frozen, focus){
+  const dp = dpm || {};
+  const f = focus || {};
+  $('dpmState').textContent = dp.built
+    ? (frozen ? `已冻结 · ${courseName} 只读` : `已更新 · ${courseName} 可写`)
+    : '为空（第一轮）';
+  $('dpmState').classList.toggle('on', !!dp.built);
+  const ds = (dp.Ds && dp.Ds.items) || [];
+  const dw = (dp.Dw && dp.Dw.items) || [];
+  const dr = (dp.Dr && dp.Dr.items) || [];
+  const c = dp.counts || {};
+  $('dpmDs').innerHTML = ds.length ? ds.map(x=>`
+    <div class="dmitem"><span class="t">${fmtTime(x.ts)}</span>${esc(x.kp)}
+      <span class="s">${esc(x.conclusion || '')}</span></div>`).join('')
+    : '<div class="dpm-empty">— 还没有这门课的导学会话</div>';
+  $('dpmDw').innerHTML = dw.length ? dw.map(x=>`
+    <div class="dmitem"><b>${esc(x.kp)}</b><span class="s">${esc(x.note || '')}</span></div>`).join('')
+    : '<div class="dpm-empty">— 还没有课堂信号</div>';
+  $('dpmDr').innerHTML = dr.length ? dr.slice(0,3).map(x=>`
+    <div class="dmitem">${esc(x.title)}<span class="s">${esc(x.reason || '')}</span></div>`).join('')
+    : '<div class="dpm-empty">— 还没有策略反思</div>';
+  $('dpmNote').textContent = dp.built
+    ? `计数：振动打点 ${c.vibe || 0} · 板书 ${c.ocr || 0} · 语音 ${c.asr || 0} · 交互作答 ${c.interactions || 0}。薄弱点 Top：${(dp.Dw && dp.Dw.top) || '—'}。`
+      + (frozen ? ' 记忆已冻结：第二轮只读快照，继续对话也不会篡改这份对比基准。' : '')
+    : '第一轮 DPM 为空 → Agent 只能读 SKG 静态图谱；把本节课采集结果写进来，这一栏才会长出内容。';
+  $('dpmSummary').innerHTML = dp.built
+    ? `今天先解决 <b>${esc(f.kp_label || '—')}</b>${f.prereq ? `，先查前置 <b>${esc(f.prereq.label)}</b>` : ''}；已经记住 ${ds.length} 条会话、${dw.length} 个薄弱点${frozen ? '（第二轮只读）' : ''}。`
+    : `这门课还没有记忆：它只能读教材图谱${courseName ? `（${esc(courseName)}）` : ''}，讲解是通用的。`;
+}
+
+function renderDemo(d){
+  $('demoStatus').textContent = d.evolved
+    ? (d.frozen ? '第二轮 · DPM 已冻结（只读）' : '第二轮 · DPM 已更新（可写）')
+    : '第一轮 · DPM 为空';
+  $('demoStatus').classList.toggle('on', !!d.evolved);
+  const f = d.focus || {};
+  const courseName = d.course ? d.course.name : '';
+  renderDPM(d.dpm, courseName, d.frozen, f);
+  const fb = $('btnFreeze');
+  fb.style.display = d.evolved ? '' : 'none';
+  fb.textContent = d.frozen ? '解冻记忆（允许写入）' : '冻结记忆（第二轮只读）';
+  $('demoHint').textContent = d.evolved
+    ? `DPM 已${d.frozen ? '冻结（第二轮只读）' : '更新'}：今天先解决「${f.kp_label || '—'}」${f.prereq ? `，并先查前置「${f.prereq.label}」` : ''}。左列是第一轮当时会给的判断，右列是现在给的。`
+    : `第一轮：DPM 为空，只能读 SKG 静态图谱${courseName ? `（当前课程：${courseName}）` : ''}。点「注入本节课采集结果」，再对比同一条闭环。`;
+
+  $('demoSteps').innerHTML = (d.steps || []).map(s=>`
+    <div class="dstep">
+      <div class="dname">${s.no} ${esc(s.name)}</div>
+      <div class="dcell r1"><span class="lbl">第一轮 · ${esc(s.r1.src)}</span>${esc(s.r1.text)}</div>
+      <div class="dcell r2 ${s.changed ? 'changed' : ''}"><span class="lbl">第二轮 · ${esc(s.r2.src)}</span>${esc(s.r2.text)}</div>
+    </div>`).join('');
+
+  const evs = d.evidence || [];
+  const byKind = evs.reduce((a,e)=>{ a[e.kind] = (a[e.kind]||0)+1; return a; }, {});
+  $('evCount').textContent = evs.length ? `${evs.length} 条 · ${courseName}` : '还没有课堂证据';
+  $('evSummary').innerHTML = evs.length
+    ? `一共 <b>${evs.length}</b> 条：板书 ${byKind.ocr||0} · 语音 ${byKind.asr||0} · 打点 ${byKind.vibe||0}${byKind.other?` · 其他 ${byKind.other}`:''}。`
+    : '还没有采集记录。点上面「注入本节课采集结果」，这里会出现板书、语音和打点的完整时间线。';
+  const _conf = x => x == null ? '' : ` · 置信度 ${Math.round(x * 100)}%`;
+  $('demoEvidence').innerHTML = evs.length ? evs.map(e=>`
+    <div class="evitem">
+      <span class="evt">${esc(e.t_label)}</span>
+      <span class="evkind ${esc(e.kind)}">${esc(e.kind_label)}</span>
+      <span class="evsrc ${e.source_type === 'human_input' ? 'human' : ''}">${e.source_type === 'human_input' ? '人工来源' : '自动采集'}${_conf(e.confidence)}</span>
+      <span><b>${esc(e.kp_label)}</b> · ${esc(e.text)}</span>
+    </div>`).join('')
+    : '<p class="note">点「注入本节课采集结果」后，这里会出现板书 OCR / 课堂语音 / 振动打点的完整时间线。</p>';
+
+  const g = d.graph || {};
+  $('demoGraph').innerHTML = (g.nodes || []).map(n=>`
+    <span class="dnode ${n.evidence ? 'has' : ''} ${n.status === 'conflict' ? 'conflict' : ''}">
+      ${esc(n.label)}${n.evidence ? ` · ${n.evidence}` : ''}</span>`).join('');
+  $('demoGraphNote').textContent = g.nodes
+    ? `这是「${g.course_name}」自己的子图谱 v${g.version}：${g.nodes.length} 个知识点、${(g.edges||[]).length} 条依赖边，${(g.evidence_nodes||[]).length} 个节点挂上了课堂证据。切到别的课程不会串。`
+    : '';
+  $('traceSummary').innerHTML = evs.length
+    ? `第二轮每改一处，都能追到它靠的是这 <b>${evs.length}</b> 条证据里的哪一条（哪一秒、什么通道、原话）。`
+    : '每条结论都会绑住它靠的证据。先注入本节课采集结果。';
+
+  resetTrace();       // 换课 / 重载后收起来，点按钮再读
+  loadSafety();       // 快照 + 待确认冲突 + 纠错样本
+  loadRejected();     // 被拒收证据看板
+}
+
+/* ---------- 可审计痕迹 T1/T2/T3 ---------- */
+let TRACE_OPEN = false;
+
+function resetTrace(){
+  TRACE_OPEN = false;
+  $('traceFold').open = false;
+  $('traceBody').innerHTML = '';
+  $('traceState').textContent = '—';
+  $('traceState').classList.remove('on');
+}
+
+function loadTrace(){
+  $('traceState').textContent = '读取中…';
+  fetch(API+'/api/teach/trace/'+encodeURIComponent(DEMO_COURSE))
+    .then(r=>r.json()).then(renderTrace)
+    .catch(()=>{ $('traceState').textContent = '读取失败'; });
+}
+
+function renderTrace(t){
+  $('traceState').textContent = t.T3 && t.T3.length
+    ? `${t.T3.length} 条证据${t.frozen ? ' · 已冻结' : ''}`
+    : '还没有课堂证据';
+  $('traceState').classList.toggle('on', !!(t.T3 && t.T3.length));
+  const t1 = t.T1 || {}, t2 = t.T2 || {}, t3 = t.T3 || [];
+  const chain = t.chain || [];
+
+  $('traceBody').innerHTML = `
+    <div class="layer t1">
+      <h4>T1 · 会话元信息<small>只描述，不下结论</small></h4>
+      <div class="kv">
+        课程：<b>${esc(t1.course_name || '')}</b>（${esc(t1.course_id || '')}）<br>
+        会话：${(t1.sessions||[]).map(s=>`<code>${esc(s)}</code>`).join(' ') || '—'}<br>
+        证据：<b>${t1.n_events || 0}</b> 条（板书 ${t1.by_kind?.ocr||0} / 语音 ${t1.by_kind?.asr||0} / 振动 ${t1.by_kind?.vibe||0}）
+        ${t1.window ? `，窗口 ${esc(t1.window.from)} → ${esc(t1.window.to)}` : ''}
+      </div>
+    </div>
+    <div class="layer t2">
+      <h4>T2 · 导学任务<small>每条结论都绑 ev_id</small></h4>
+      <div class="kv">
+        今天：<b>${esc(t2.goal || '—')}</b><br>
+        ${t2.prereq ? `先查前置：<b>${esc(t2.prereq.label)}</b>（状态 ${esc(t2.prereq.status)}）<br>` : ''}
+        ${t2.strategy ? `当前策略：${esc(t2.strategy)}<br>` : ''}
+      </div>
+      ${(t2.claims||[]).map(c=>`
+        <div class="claim">
+          ${esc(c.claim)}<span class="v ${c.verdict==='PASS'?'pass':'weak'}">${c.verdict}</span>
+          <span class="why">${esc(c.why)} · 支撑 ev#${(c.supports||[]).join(', ev#') || '—'}</span>
+        </div>`).join('') || '<div class="claim">— 还没有可绑证据的结论</div>'}
+    </div>
+    <div class="layer">
+      <h4>T3 · 原始证据<small>每一秒都能被查到</small></h4>
+      ${t3.length ? t3.map(e=>`
+        <div class="t3row">
+          <span class="id">ev#${e.ev_id}</span>
+          <span class="tt">${esc(e.t_label)}</span>
+          <span class="evkind ${esc(e.kind)}">${esc(e.kind_label)}</span>
+          <span><b>${esc(e.kp_label)}</b> · ${esc(e.text)}
+            <span class="why" style="display:block;color:var(--muted);font-size:11.5px">
+              来源：${esc((e.prov && (e.prov.ref || e.prov.device || e.prov.kind_label)) || e.kind_label)}
+            </span>
+          </span>
+        </div>`).join('')
+        : '<p class="note">还没有课堂证据。先点「注入本节课采集结果」。</p>'}
+    </div>
+    ${chain.length ? `
+    <div class="layer t2">
+      <h4>可审计链<small>结论 → 证据 → 任务</small></h4>
+      ${chain.map(c=>`
+        <div class="chain">
+          <div class="cl"><b>结论</b>：${esc(c.from)}</div>
+          ${(c.via||[]).map(v=>`<span class="via">↳ ${esc(v)}</span>`).join('')}
+          <div class="cl"><b>动作</b>：${esc(c.to)}</div>
+        </div>`).join('')}
+    </div>` : ''}
+    <p class="note" style="margin-top:10px">${esc(t.note || '')}</p>
+  `;
+}
+
+/* 痕迹卡：浏览器原生折叠，展开时才去读接口 */
+$('traceFold').addEventListener('toggle', e=>{
+  if(e.target.open){ TRACE_OPEN = true; loadTrace(); }
+  else{ resetTrace(); }
+});
+
+$('btnEvolve').onclick = ()=>{
+  $('btnEvolve').disabled = true;
+  $('demoState').textContent = '正在写入子图谱…';
+  fetch(API+'/api/teach/demo/evolve', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({course_id: DEMO_COURSE})
+  }).then(r=>r.json()).then(d=>{
+    $('demoState').textContent = `已写入 ${d.inserted} 条并冻结记忆`;
+    loadDemoCourses(); loadDemo(); loadVersions();
+  }).catch(e=>{
+    $('demoState').textContent = '写入失败：' + e.message;
+  }).finally(()=>{
+    $('btnEvolve').disabled = false;
+    setTimeout(()=>{ $('demoState').textContent = ''; }, 2600);
+  });
+};
+
+$('btnFreeze').onclick = ()=>{
+  const want = !(DEMO_DATA && DEMO_DATA.frozen);
+  $('btnFreeze').disabled = true;
+  $('demoState').textContent = want ? '正在冻结记忆…' : '正在解冻…';
+  fetch(API+'/api/teach/demo/freeze', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({course_id: DEMO_COURSE, frozen: want})
+  }).then(r=>r.json()).then(d=>{
+    $('demoState').textContent = d.frozen ? '已冻结：第二轮只读' : '已解冻：允许继续写入';
+    loadDemo(); loadVersions();
+  }).catch(e=>{
+    $('demoState').textContent = '操作失败：' + e.message;
+  }).finally(()=>{
+    $('btnFreeze').disabled = false;
+    setTimeout(()=>{ $('demoState').textContent = ''; }, 2600);
+  });
+};
+
+$('btnReset').onclick = ()=>{
+  $('btnReset').disabled = true;
+  $('demoState').textContent = '正在清空课堂记忆…';
+  fetch(API+'/api/teach/demo/reset', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({course_id: DEMO_COURSE})
+  }).then(r=>r.json()).then(d=>{
+    $('demoState').textContent = d.removed ? `已清空 ${d.removed} 条（回到第一轮）` : '本来就没有课堂证据';
+    loadDemoCourses(); loadDemo(); loadVersions();
+  }).catch(e=>{
+    $('demoState').textContent = '清空失败：' + e.message;
+  }).finally(()=>{
+    $('btnReset').disabled = false;
+    setTimeout(()=>{ $('demoState').textContent = ''; }, 2600);
+  });
+};
+
+/* ---------- 人工补录：识别链路失效时的兜底通道 ---------- */
+$('manualForm').onsubmit = e=>{
+  e.preventDefault();
+  const kp = $('manKp').value.trim();
+  const text = $('manText').value.trim();
+  const st = $('manualState');
+  if(!kp || !text){ st.textContent = '知识点和卡点描述都要填'; return; }
+  st.textContent = '提交中…';
+  fetch(API+'/api/teach/manual/ingest', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({course_id: DEMO_COURSE, kp_label: kp, text})
+  }).then(async r=>{
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok || d.ok === false) throw new Error(d.error || '写入失败');
+    return d;
+  }).then(d=>{
+    st.textContent = d.conflict
+      ? `检测到冲突：${d.reason}（去「演示安全网」确认）`
+      : '已补录 1 条（人工来源，已写入 DPM）';
+    $('manualForm').reset();
+    loadDemo(); loadSafety();
+  }).catch(err=>{ st.textContent = '失败：' + err.message; });
+};
+
+/* ---------- 被拒收的证据看板 ---------- */
+const KIND_LABEL = {ocr:'板书识别', asr:'课堂语音', vibe:'振动打点', human:'人工补录'};
+
+function loadRejected(){
+  fetch(API+'/api/teach/rejected?course_id='+encodeURIComponent(DEMO_COURSE))
+    .then(r=>r.json()).then(d=>{
+      const rows = d.rejected || [];
+      $('rejectedSummary').innerHTML =
+        `被拒收的证据 · 低置信度 / 乱码 / 校验不通过（<b>${rows.length}</b> 条）`;
+      $('rejectedBody').innerHTML = rows.length ? rows.map(x=>{
+        const ev = x.event || {};
+        const why = (x.reasons_list && x.reasons_list.length)
+          ? x.reasons_list.join('；') : '未通过校验';
+        return `<div class="rej-row">
+          <span class="evkind ${esc(ev.kind || '')}">${esc(KIND_LABEL[ev.kind] || ev.kind || '—')}</span>
+          <span class="rej-status">${esc(x.status || 'UNVERIFIED')}</span>
+          <span><b>${esc(ev.kp_label || '—')}</b> · ${esc((ev.text || '').slice(0, 60))}
+            <span class="rej-why">${esc(why)}</span></span></div>`;
+      }).join('') : '<p class="note">还没有被拒收的证据。低置信度或乱码内容会自动进这里，不污染 DPM。</p>';
+    }).catch(()=>{});
+}
+
+/* ---------- 演示安全网：快照回滚 + 冲突确认 ---------- */
+function loadSafety(){
+  const cid = DEMO_COURSE;
+  Promise.all([
+    fetch(API+'/api/teach/conflicts?course_id='+encodeURIComponent(cid))
+      .then(r=>r.json()).catch(()=>null),
+    fetch(API+'/api/teach/snapshots/'+encodeURIComponent(cid))
+      .then(r=>r.json()).catch(()=>null),
+  ]).then(([c,s])=>{
+    const confs = (c && c.conflicts) || [];
+    const snaps = (s && s.snapshots) || [];
+    const fb = (c && c.feedback_count) || 0;
+    $('safetySummary').innerHTML =
+      `演示安全网 · 快照回滚 / 记忆冲突（<b>${confs.length}</b> 条待确认 · 纠错样本 ${fb} 条）`;
+    let html = '<div class="row"><span class="tag"># 快照</span><span>备份的是整份课堂记忆</span></div>';
+    html += snaps.length ? snaps.map(x=>`
+      <div class="safe-row"><b>${esc(x.label)}</b>
+        <span>${x.rows} 条证据${x.frozen?' · 冻结态':''}</span>
+        <button class="miniBtn" type="button" data-restore="${esc(x.name)}">回滚到这里</button></div>`).join('')
+      : '<p class="note">还没有快照。点「清空课堂记忆」或「注入本节课采集结果」会自动生成。</p>';
+    html += '<div class="row" style="margin-top:12px"><span class="tag"># 待确认冲突</span><span>不自动消解</span></div>';
+    html += confs.length ? confs.map(x=>`
+      <div class="safe-row"><b>${esc(x.kp_label)}</b>
+        <span>${esc(x.reason)}</span>
+        <button class="miniBtn" type="button" data-conf="${x.id}" data-act="accept_new">采用新证据</button>
+        <button class="miniBtn" type="button" data-conf="${x.id}" data-act="keep_old">保留旧记忆</button></div>`).join('')
+      : '<p class="note">没有冲突。新证据和旧记忆矛盾时，这里会出现待确认项，两条都保留。</p>';
+    $('safetyBody').innerHTML = html;
+  });
+}
+
+$('safetyBody').onclick = e=>{
+  const rb = e.target.closest('[data-restore]');
+  const cb = e.target.closest('[data-conf]');
+  const done = d=>{ if(!d.ok) throw new Error(d.error || '操作失败'); loadDemo(); loadSafety(); loadVersions(); };
+  if(rb){
+    fetch(API+'/api/teach/snapshots/'+encodeURIComponent(DEMO_COURSE)+'/restore', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name: rb.dataset.restore})
+    }).then(r=>r.json()).then(done)
+      .catch(err=>{ $('safetySummary').textContent = '回滚失败：' + err.message; });
+  }
+  if(cb){
+    fetch(API+'/api/teach/conflicts/'+encodeURIComponent(cb.dataset.conf)+'/resolve', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action: cb.dataset.act})
+    }).then(r=>r.json()).then(done)
+      .catch(err=>{ $('safetySummary').textContent = '处理失败：' + err.message; });
+  }
+};
+
+/* ---------- 今日记忆卡 ---------- */
+function loadDigest(){
+  fetch(API+'/api/digest/today').then(r=>r.json()).then(d=>{
+    $('digestDate').textContent = d.date || '';
+    const cs = d.courses || [];
+    const knots = cs.reduce((a,c)=>a+(c.knots||0),0);
+    $('digestClass').innerHTML = d.events
+      ? `<b>今日新录入 ${knots} 个核心知识点</b>（${d.events} 条证据），自动过滤了 `
+        + `<b>${d.rejected||0}</b> 条低置信度杂音。`
+        + `<div style="color:var(--muted);font-size:12px;margin-top:4px">`
+        + cs.map(c=>`${esc(c.course_name)} · ${c.events} 条`).join(' / ') + '</div>'
+      : '今天还没有课堂采集。';
+
+    const w = d.weak;
+    $('digestWeak').innerHTML = w
+      ? `<div class="digest-weak"><b>${esc(w.kp || '—')}</b>
+           <div style="color:var(--muted);font-size:12px">${esc(w.course_name || '')} · ${esc(w.note || '')}</div>
+           <button class="miniBtn" id="btnWeakGo" type="button">开始 2 分钟抽查</button></div>`
+      : '<span style="color:var(--muted)">还没有足够证据判断薄弱点。</span>';
+    const go = $('btnWeakGo');
+    if(go && w){
+      go.onclick = ()=>{
+        document.querySelector('.tab[data-pane="p-answer"]').click();
+        $('txtQ').value = `我在「${w.kp}」这里还没弄懂，想先补最基础的那一步`;
+        $('txtQ').focus();
+        $('txtQ').scrollIntoView({behavior:'smooth', block:'center'});
+      };
+    }
+  }).catch(()=>{});
+}
+
+(function(){
+  var kb = document.getElementById('btnKnowledge');
+  if(kb) kb.href = location.protocol + '//' + location.hostname + ':5173/#/knowledge';
+})();
+
+/* ---------- 启动 ---------- */
+$('gloss').innerHTML = Object.entries(STRATEGY_HUMAN)
+  .map(([k, v]) => `<div><b>${k}</b>：${v}</div>`).join('');
+resizeCanvas(); layout(true); loadCourses(); loadVersions(); loadNextAction(); connect();
+loadDigest();
+$('courseSel').onchange = e => switchCourse(e.target.value);
+loadDemoCourses(); loadDemo();
+const _qs = new URLSearchParams(location.search);
+const _tab = _qs.get('tab');
+if(_tab){ const _t = document.querySelector(`.tab[data-pane="p-${_tab}"]`); if(_t) _t.click(); }
+// 演示链接可以直接带 ?tab=demo&trace=1 把分层痕迹展开
+if(_qs.get('trace') === '1'){
+  setTimeout(()=>{ $('traceFold').open = true; }, 600);
+}
+if(new URLSearchParams(location.search).get('hist') === '1'){ showHistory(); }
+fetch(API+'/api/teach/session/latest').then(r=>r.json()).then(d=>{
+  if(!d.conclusion) return;
+  const vf = d.verification || 'PASS';
+  const vel = $('verifyState');
+  vel.textContent = '证据校验：' + vf;
+  vel.className = 'vstate ' + (vf === 'PASS' ? 'ok' : vf === 'FAIL' ? 'bad' : 'warn');
+  if(vf !== 'PASS'){
+    HERO_LOCKED = true;
+    $('planTitle').textContent = '证据校验未通过：先重拍 / 重说';
+    $('planReason').textContent = '上一次识别文本可能有问题，没写图谱也没出题。';
+    $('planMeta').textContent = '只留原始日志';
+  } else if(d.kp) setHero(d.kp, d.error_type, d.ocr || d.asr);
+  const score = d.total ? `自测 ${d.correct}/${d.total}` : '待自测';
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML = `
+    <div class="row"><span class="tag"># 上一次 · ${d.version}</span><span>${score}</span></div>
+    <h2>${d.ocr || '（上次没有识别到板书）'}</h2>
+    <div class="kv"><b>你说</b><span>${d.asr || '—'}</span></div>
+    <div class="conclusion">${d.conclusion}</div>
+    <ol class="steps">${(d.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ol>
+    <div class="foot"><span>本次策略：${d.strategy}</span><span class="pill">来自已确认记录</span></div>`;
+  $('cards').appendChild(el);
+  if(d.quiz && d.quiz.items && d.quiz.items.length){ renderQuiz(d.quiz); }
+}).catch(()=>{});
+</script>
+</body>
+</html>

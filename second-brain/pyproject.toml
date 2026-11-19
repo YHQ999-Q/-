@@ -1,0 +1,9 @@
+[project]
+name = "beeagent"
+version = "0.1.0"
+description = "Bee second-brain agent 复刻（最小可跑骨架，纯标准库）"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+beeagent = "beeagent.cli:main"

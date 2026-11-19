@@ -1,0 +1,20 @@
+{
+  "sample_id": "insight-02",
+  "category": "grow",
+  "kind": "insight",
+  "title": "你对\"公平测试条件\"和\"反捷径\"的学术敏感，正在从课堂迁移到自我评估。",
+  "date": "2026-11-13",
+  "generated_at": "2026-11-13 03:23:54",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "related_samples": [
+    "classroom-04",
+    "project-01"
+  ],
+  "notes": "将 AI 评估讲座中的 Goodhart、表现/能力区分迁移到自我评估。 这是 Bee Grow 的原生产出（已脱敏），不是标准答案。",
+  "scrubbed_fields": [
+    "目标院校简称",
+    "可能指向个人身份的措辞",
+    "原始洞察编号"
+  ]
+}

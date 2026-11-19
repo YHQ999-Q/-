@@ -1,0 +1,33 @@
+{
+  "sample_id": "daily-02",
+  "category": "grow",
+  "kind": "daily",
+  "title": "每日回顾 2026-11-13：课程反思与黑客松共创并行，教育AI在快速迭代中逐渐成形。",
+  "date": "2026-11-13",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "conversations_count": 10,
+  "omitted_fields": [
+    "email_summary",
+    "calendar_summary",
+    "account_summaries",
+    "locations",
+    "photos"
+  ],
+  "related_samples": [
+    "classroom-02",
+    "classroom-03",
+    "project-02"
+  ],
+  "notes": "已删除邮件摘要、日历明细、位置、照片，以及民族/生源地自我介绍句；保留课程反思与教育 AI / 黑客松共创主线。",
+  "scrubbed_fields": [
+    "用户真名",
+    "本校与目标院校",
+    "精确绩点",
+    "邮件账号与邮件正文",
+    "精确地址与经纬度",
+    "民族与生源地表述（已删除）",
+    "私人生活段落（已删除）",
+    "原始每日回顾编号"
+  ]
+}

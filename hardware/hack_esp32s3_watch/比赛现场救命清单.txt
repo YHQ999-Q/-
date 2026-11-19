@@ -1,0 +1,88 @@
+==================================================
+ ESP32-S3 手表 · 比赛现场救命清单
+ 打印出来 / 存手机里，出问题照着查
+==================================================
+
+【一、常用命令（只在 "ESP-IDF 5.2 CMD" 里敲）】
+
+  切盘符：            E:
+  进工程：            cd E:\hack_esp32s3_watch
+  编译：              idf.py build
+  烧录+看串口：        idf.py -p COM3 flash monitor
+  只烧录：            idf.py -p COM3 flash
+  只看串口：          idf.py -p COM3 monitor
+  退出串口监控：       Ctrl + ]
+  擦除整片 flash：     idf.py -p COM3 erase-flash
+  改配置菜单：         idf.py menuconfig
+  查看可用串口：       idf.py -p COMx 里的 COM 号，在设备管理器看
+
+  ⚠️ 换串口号就把 COM3 换成你的，比如 COM5
+
+
+【二、报错对照表】
+
+1. "Component xxx not found" / 组件找不到
+   → idf.py add-dependency espressif/xxx
+   → 还不行：删掉 managed_components 文件夹和 dependencies.lock，重新 build
+
+2. 摄像头初始化失败（日志 0x105 / ESP_ERR_NOT_FOUND）
+   → 按顺序查：
+     a) 摄像头排线插反/没插到底（最常见）
+     b) PWDN、RESET 引脚定义和实际接线不一致
+     c) SCCB 的 SDA/SCL 接反
+     d) 摄像头供电（3.3V）没接
+     e) 最终手段：board_config.h 里 ENABLE_CAMERA 改 0，先演示别的
+
+3. I2S 麦克风没波形 / 全是 0 / 全是噪声
+   → a) SD / SCK / WS 三根线接错（SCK 是时钟，WS 是左右声道）
+     b) INMP441 的 L/R 脚必须接 GND（否则只有一半数据）
+     c) 必须共地（ESP32 的 GND 和麦克风 GND 接一起）
+     d) 麦克风 VDD 接 3.3V，不要接 5V
+     e) 兜底：ENABLE_MIC 改 0
+
+4. WiFi 连不上
+   → a) ESP32-S3 只支持 2.4G，手机热点要开 2.4G
+     b) SSID 不能有中文、不能有空格
+     c) 密码认证方式选 WPA2（WPA3 有时连不上）
+     d) 看串口日志：一直在 "WiFi 断开，2 秒后重连" 就是密码/频段问题
+
+5. 上传失败 "上传 jpeg 失败: ESP_ERR_HTTP_CONNECT"
+   → a) UPLOAD_URL 里的 IP 写错（用 ipconfig 查）
+     b) 电脑防火墙拦了 5000 端口（第一次运行要允许）
+     c) 电脑和手表不在同一个 WiFi
+     d) 手机上先浏览器打开 http://电脑IP:5000 试试通不通
+
+6. 烧录报 "Failed to connect to ESP32-S3"
+   → a) 按住 BOOT 键，再点一下 RST，然后松开 BOOT，重新烧
+     b) 换一根数据线（很多线只能充电）
+     c) 设备管理器里有没有 COM 口？没有 → 装 CH340 / CP210 驱动
+     d) 关掉其它占用串口的软件（串口助手、Arduino IDE）
+
+7. 烧进去后无限重启 / Guru Meditation
+   → a) 看串口第一行 backtrace，通常是数组越界或空指针
+     b) 供电不足：电脑 USB 口带不动摄像头，换带电源的 USB 口
+     c) idf.py -p COM3 erase-flash 后再烧一次
+
+8. 串口全是乱码
+   → 波特率必须是 115200；monitor 自带这个设置，用别的串口助手要手动改
+
+
+【三、降级开关（现场救命，改一个数字重新 build 即可）】
+
+  文件：main\board_config.h
+      #define ENABLE_CAMERA   1   →  改成 0 = 关掉摄像头
+      #define ENABLE_MIC      1   →  改成 0 = 关掉麦克风
+
+  文件：main\app_config.h
+      #define ENABLE_WIFI     1   →  改成 0 = 不连 WiFi（纯离线跑）
+
+  改完一定要重新 idf.py build + flash 才生效。
+
+
+【四、引脚表在哪个文件】
+
+    main\board_config.h   ← 所有引脚宏
+    main\app_config.h     ← WiFi / 服务器地址 / 采样参数
+    主程序 hack_esp32s3_watch.c 不含引脚，不用动
+
+==================================================

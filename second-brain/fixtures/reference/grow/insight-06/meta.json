@@ -1,0 +1,20 @@
+{
+  "sample_id": "insight-06",
+  "category": "grow",
+  "kind": "insight",
+  "title": "你的职业方向正在从\"教育技术\"向更硬核的AI产品/管理岗位快速收敛。",
+  "date": "2026-11-13",
+  "generated_at": "2026-11-13 03:23:54",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "related_samples": [
+    "project-01",
+    "daily-01"
+  ],
+  "notes": "职业方向从教育技术向 AI 产品/管理收敛。目标院校已脱敏。 这是 Bee Grow 的原生产出（已脱敏），不是标准答案。",
+  "scrubbed_fields": [
+    "目标院校简称",
+    "可能指向个人身份的措辞",
+    "原始洞察编号"
+  ]
+}

@@ -1,0 +1,6 @@
+# Bee 的定时节奏（北京时间）：每日回顾 ≈20:20，Grow 洞察 ≈03:23。按需改路径后 `crontab -e` 粘贴。
+# 机器时区需为 Asia/Shanghai（或在行首加 CRON_TZ=Asia/Shanghai）。
+CRON_TZ=Asia/Shanghai
+*/5 * * * * cd /path/to/bee-agent-replica && python3 -m beeagent process --now "$(date +\%Y-\%m-\%dT\%H:\%M:\%S)" >> data/cron.log 2>&1
+20 20 * * * cd /path/to/bee-agent-replica && python3 -m beeagent run-daily --date "$(date +\%F)" >> data/cron.log 2>&1
+23 3 * * *  cd /path/to/bee-agent-replica && python3 -m beeagent run-grow >> data/cron.log 2>&1

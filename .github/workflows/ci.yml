@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend-build:
+    name: 前端构建验证 (Vite + TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装依赖
+        working-directory: frontend
+        run: npm ci
+      - name: 构建
+        working-directory: frontend
+        run: npm run build
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: frontend/dist
+          retention-days: 7
+
+  opentutor-api:
+    name: OpenTutor 后端冒烟测试
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12']
+    steps:
+      - uses: actions/checkout@v4
+        name: checkout
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: 安装 OpenTutor 核心依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r opentutor/apps/api/requirements-core.txt
+      - name: 静态导入检查
+        # main.py 用 `from config import settings`，须在 apps/api 目录内运行
+        run: |
+          cd opentutor/apps/api
+          python -c "from main import app; print('OpenTutor app 可导入:', app.title)"
+
+  security-scan:
+    name: 敏感信息扫描 (不变量)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 禁止真实密钥/数据库进入仓库
+        run: |
+          echo "检查是否混入敏感文件..."
+          if find . -path '*/node_modules' -prune -o \( -name 'settings.env' -o -name 'api_key.txt' -o -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' \) -print -quit | grep -q .; then
+            echo "❌ 检测到敏感文件，请勿提交真实 keys / 数据库"
+            exit 1
+          fi
+          echo "✅ 通过：无真实密钥/数据库"

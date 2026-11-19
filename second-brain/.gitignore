@@ -1,0 +1,5 @@
+.env
+data/*.db
+data/outputs/
+__pycache__/
+*.pyc

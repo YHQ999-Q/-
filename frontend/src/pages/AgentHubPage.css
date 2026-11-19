@@ -1,0 +1,15 @@
+.agent-hub{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:visible}
+.agent-hub>.tutor-page{height:auto;min-height:0;flex:none}
+.agent-hub .tutor-body{min-height:0}
+.agent-hub .tutor-chat{min-height:0}
+.agent-hub .tutor-scroll{min-height:0;overflow:visible}
+.agent-hub .tutor-compose-area{position:sticky;bottom:0;z-index:6;background:#fff}
+.workspace:has(.agent-hub) .workspace-main{height:auto;min-height:100dvh}
+.workspace:has(.agent-hub) .workspace-content{overflow:visible}
+/* 手机上底部导航是 fixed 的：输入框要停在导航上方，不能被盖住 */
+@media(max-width:760px){
+  .agent-hub>.tutor-page{height:auto}
+  .agent-hub .tutor-compose-area{bottom:calc(70px + env(safe-area-inset-bottom));padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  .agent-hub .tutor-messages{padding-bottom:22px}
+  .agent-hub .tutor-footnote{display:none}
+}

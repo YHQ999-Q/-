@@ -1,0 +1,19 @@
+{
+  "sample_id": "insight-05",
+  "category": "grow",
+  "kind": "insight",
+  "title": "你对\"批判性使用AI\"的焦虑与行动，正在形成一套个人化的AI伦理工作流。",
+  "date": "2026-11-13",
+  "generated_at": "2026-11-13 03:23:54",
+  "timezone": "Asia/Shanghai",
+  "source_label": "Bee",
+  "related_samples": [
+    "classroom-04"
+  ],
+  "notes": "批判性使用 AI 的个人边界，与评估讲座呼应。 这是 Bee Grow 的原生产出（已脱敏），不是标准答案。",
+  "scrubbed_fields": [
+    "目标院校简称",
+    "可能指向个人身份的措辞",
+    "原始洞察编号"
+  ]
+}
